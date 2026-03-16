@@ -1,0 +1,1744 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AquaCiclo — Guía de Ciclado de Acuario</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #07090f;
+  --s1: #0d1117;
+  --s2: #131b27;
+  --s3: #192233;
+  --border: #1e2d42;
+  --border2: #253548;
+  --text: #ddeeff;
+  --muted: #6b8aaa;
+  --dim: #38506a;
+
+  --cyan: #00d4ff;
+  --blue: #4488ff;
+  --green: #00e08a;
+  --red: #ff4466;
+  --orange: #ff8c42;
+  --yellow: #ffd166;
+  --purple: #a78bfa;
+  --teal: #2dd4bf;
+
+  --glow-cyan: rgba(0,212,255,0.12);
+  --glow-green: rgba(0,224,138,0.12);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'Outfit', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* Animated background */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 60% 40% at 20% 10%, rgba(0,100,180,0.07) 0%, transparent 60%),
+    radial-gradient(ellipse 40% 30% at 80% 80%, rgba(0,180,140,0.05) 0%, transparent 50%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(0,212,255,0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,212,255,0.025) 1px, transparent 1px);
+  background-size: 50px 50px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* BUBBLES */
+.bubbles { position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden; }
+.bubble {
+  position: absolute;
+  bottom: -20px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, rgba(0,212,255,0.35), rgba(0,212,255,0.05));
+  border: 1px solid rgba(0,212,255,0.2);
+  animation: floatUp linear infinite;
+}
+@keyframes floatUp {
+  0%   { transform: translateY(0) translateX(0) scale(1); opacity: 0.5; }
+  40%  { transform: translateY(-45vh) translateX(12px) scale(1.05); opacity: 0.25; }
+  100% { transform: translateY(-110vh) translateX(-8px) scale(0.8); opacity: 0; }
+}
+
+/* ─── SETUP SCREEN ─── */
+#setupScreen {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg);
+  padding: 20px;
+}
+
+.setup-card {
+  background: var(--s1);
+  border: 1px solid var(--border2);
+  border-radius: 24px;
+  padding: 40px 36px;
+  max-width: 520px;
+  width: 100%;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 40px 80px rgba(0,0,0,0.6), 0 0 0 1px rgba(0,212,255,0.06);
+}
+
+.setup-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--cyan), var(--blue), var(--teal));
+}
+
+.setup-logo {
+  font-size: 48px;
+  margin-bottom: 6px;
+  display: block;
+}
+
+.setup-card h1 {
+  font-size: 32px;
+  font-weight: 900;
+  letter-spacing: -1px;
+  line-height: 1;
+  margin-bottom: 4px;
+  background: linear-gradient(135deg, #ddeeff, var(--cyan));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.setup-card .tagline {
+  font-size: 13px;
+  color: var(--muted);
+  font-family: 'JetBrains Mono', monospace;
+  margin-bottom: 32px;
+  letter-spacing: 0.5px;
+}
+
+.setup-section {
+  margin-bottom: 24px;
+}
+
+.setup-section label {
+  display: block;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 1.5px;
+  color: var(--muted);
+  font-family: 'JetBrains Mono', monospace;
+  margin-bottom: 10px;
+  text-transform: uppercase;
+}
+
+.option-grid {
+  display: grid;
+  gap: 8px;
+}
+
+.option-grid.cols2 { grid-template-columns: 1fr 1fr; }
+.option-grid.cols4 { grid-template-columns: repeat(4, 1fr); }
+
+.opt-btn {
+  background: var(--s2);
+  border: 1px solid var(--border);
+  color: var(--muted);
+  border-radius: 12px;
+  padding: 12px 10px;
+  cursor: pointer;
+  font-family: 'Outfit', sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  text-align: center;
+  transition: all 0.15s;
+  user-select: none;
+}
+
+.opt-btn:hover { border-color: var(--border2); color: var(--text); background: var(--s3); }
+
+.opt-btn.selected {
+  border-color: var(--cyan);
+  color: var(--cyan);
+  background: rgba(0,212,255,0.08);
+  box-shadow: 0 0 0 1px rgba(0,212,255,0.15);
+}
+
+.opt-btn .opt-icon { font-size: 20px; display: block; margin-bottom: 5px; }
+.opt-btn .opt-val { font-size: 16px; font-weight: 700; display: block; }
+.opt-btn .opt-lbl { font-size: 10px; display: block; margin-top: 2px; opacity: 0.7; }
+
+.opt-btn.selected .opt-lbl { opacity: 1; }
+
+/* Bacteria method cards */
+.method-card {
+  background: var(--s2);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 14px 16px;
+  cursor: pointer;
+  transition: all 0.15s;
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.method-card:hover { border-color: var(--border2); background: var(--s3); }
+
+.method-card.selected {
+  border-color: var(--cyan);
+  background: rgba(0,212,255,0.06);
+}
+
+.method-icon { font-size: 24px; flex-shrink: 0; }
+
+.method-info h3 { font-size: 14px; font-weight: 700; margin-bottom: 3px; }
+.method-info p { font-size: 11.5px; color: var(--muted); line-height: 1.5; }
+
+.method-card.selected .method-info h3 { color: var(--cyan); }
+
+/* Strips option */
+.strips-row { display: flex; gap: 8px; }
+
+.strip-opt {
+  flex: 1;
+  background: var(--s2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px 12px;
+  cursor: pointer;
+  font-size: 12.5px;
+  font-weight: 500;
+  text-align: center;
+  color: var(--muted);
+  transition: all 0.15s;
+}
+.strip-opt:hover { border-color: var(--border2); color: var(--text); }
+.strip-opt.selected { border-color: var(--orange); color: var(--orange); background: rgba(255,140,66,0.08); }
+.strip-opt .strip-icon { font-size: 18px; display: block; margin-bottom: 4px; }
+
+.btn-start {
+  width: 100%;
+  padding: 16px;
+  background: linear-gradient(135deg, var(--cyan), var(--blue));
+  border: none;
+  border-radius: 14px;
+  color: #07090f;
+  font-family: 'Outfit', sans-serif;
+  font-size: 16px;
+  font-weight: 800;
+  cursor: pointer;
+  margin-top: 28px;
+  transition: opacity 0.2s, transform 0.15s;
+  letter-spacing: 0.3px;
+}
+.btn-start:hover { opacity: 0.92; transform: translateY(-2px); }
+.btn-start:active { transform: translateY(0); }
+.btn-start:disabled { opacity: 0.35; cursor: not-allowed; transform: none; }
+
+/* ─── MAIN APP ─── */
+#app { display: none; position: relative; z-index: 10; }
+
+/* HEADER */
+header {
+  background: rgba(13,17,23,0.85);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+  padding: 0 28px;
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+
+.header-inner {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  height: 60px;
+  max-width: 1120px;
+  margin: 0 auto;
+}
+
+.app-logo {
+  font-size: 22px;
+  font-weight: 900;
+  letter-spacing: -1px;
+  background: linear-gradient(90deg, var(--cyan), var(--teal));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.config-pills { display: flex; gap: 6px; flex-wrap: wrap; }
+
+.cpill {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  padding: 3px 9px;
+  border-radius: 20px;
+  border: 1px solid;
+  letter-spacing: 0.3px;
+}
+.cpill-blue { border-color: var(--cyan); color: var(--cyan); background: rgba(0,212,255,0.07); }
+.cpill-green { border-color: var(--green); color: var(--green); background: rgba(0,224,138,0.07); }
+.cpill-orange { border-color: var(--orange); color: var(--orange); background: rgba(255,140,66,0.07); }
+
+.btn-reset {
+  margin-left: auto;
+  background: none;
+  border: 1px solid var(--border);
+  color: var(--muted);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  padding: 5px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.btn-reset:hover { border-color: var(--red); color: var(--red); }
+
+/* TABS */
+.tabs-bar {
+  background: var(--s1);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  padding: 0 28px;
+  overflow-x: auto;
+}
+
+.tab-btn {
+  font-family: 'Outfit', sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  padding: 15px 20px;
+  background: none;
+  border: none;
+  color: var(--muted);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  white-space: nowrap;
+  position: relative;
+  transition: color 0.15s;
+}
+.tab-btn:hover { color: var(--text); }
+.tab-btn.active { color: var(--cyan); font-weight: 600; }
+.tab-btn.active::after {
+  content: '';
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--cyan), var(--blue));
+  border-radius: 2px 2px 0 0;
+}
+
+/* MAIN CONTENT */
+main { max-width: 1120px; margin: 0 auto; padding: 28px 20px 80px; }
+
+.tab-panel { display: none; }
+.tab-panel.active { display: block; animation: fadeUp 0.22s ease; }
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* PROGRESS AREA */
+.dash-top {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 20px;
+  align-items: start;
+  margin-bottom: 24px;
+}
+
+.dash-title {
+  font-size: 26px;
+  font-weight: 900;
+  letter-spacing: -0.5px;
+  line-height: 1.1;
+}
+.dash-title span { display: block; font-size: 13px; font-weight: 400; color: var(--muted); margin-top: 4px; letter-spacing: 0; }
+
+.stats-row { display: flex; gap: 10px; flex-wrap: wrap; }
+
+.stat-box {
+  background: var(--s1);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 10px 16px;
+  text-align: center;
+  min-width: 80px;
+}
+.stat-box .v { font-size: 24px; font-weight: 800; line-height: 1; font-family: 'JetBrains Mono', monospace; }
+.stat-box .l { font-size: 9px; color: var(--muted); font-family: 'JetBrains Mono', monospace; margin-top: 3px; letter-spacing: 0.5px; }
+
+/* BIG PROGRESS */
+.progress-hero {
+  background: var(--s1);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 22px 26px;
+  margin-bottom: 24px;
+  position: relative;
+  overflow: hidden;
+}
+.progress-hero::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; height: 2px;
+  background: linear-gradient(90deg, var(--cyan), var(--blue), var(--green));
+}
+
+.ph-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+.ph-label { font-size: 14px; font-weight: 700; }
+.ph-pct { font-family: 'JetBrains Mono', monospace; font-size: 32px; font-weight: 500; color: var(--cyan); line-height: 1; }
+
+.track {
+  height: 18px;
+  background: var(--s3);
+  border-radius: 9px;
+  overflow: hidden;
+  position: relative;
+}
+.track-fill {
+  height: 100%;
+  border-radius: 9px;
+  background: linear-gradient(90deg, var(--cyan), var(--blue), var(--green));
+  transition: width 0.5s cubic-bezier(0.4,0,0.2,1);
+  min-width: 3px;
+  position: relative;
+}
+.track-fill::after {
+  content: '';
+  position: absolute;
+  top: 2px; left: 4px; right: 4px; height: 4px;
+  background: rgba(255,255,255,0.25);
+  border-radius: 3px;
+}
+
+.phase-row {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 10px;
+}
+.pm {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  color: var(--dim);
+  text-align: center;
+  line-height: 1.4;
+  transition: color 0.3s;
+}
+.pm.lit { color: var(--cyan); }
+
+/* WEEK + DAY */
+.week-wrap {
+  margin-bottom: 16px;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  overflow: hidden;
+  background: var(--s1);
+}
+
+.week-hdr {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 18px;
+  cursor: pointer;
+  background: var(--s2);
+  user-select: none;
+  transition: background 0.15s;
+}
+.week-hdr:hover { background: var(--s3); }
+
+.wk-num {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  color: var(--dim);
+  letter-spacing: 1px;
+  min-width: 40px;
+}
+.wk-title { font-size: 15px; font-weight: 700; flex: 1; }
+.wk-badge {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  padding: 3px 9px;
+  border-radius: 20px;
+  border: 1px solid;
+  letter-spacing: 0.5px;
+}
+.wk-mini { display: flex; align-items: center; gap: 7px; font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--muted); }
+.wk-bar { width: 55px; height: 4px; background: var(--s3); border-radius: 2px; overflow: hidden; }
+.wk-bar-fill { height: 100%; border-radius: 2px; transition: width 0.3s; }
+.wk-chev { color: var(--dim); font-size: 11px; transition: transform 0.22s; }
+.week-wrap.open .wk-chev { transform: rotate(180deg); }
+
+.week-body { display: none; padding: 0 18px 18px; }
+.week-wrap.open .week-body { display: block; }
+
+.week-sub { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--dim); padding: 12px 0 4px; letter-spacing: 0.5px; }
+
+/* DAY */
+.day-card {
+  margin-top: 12px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+  background: var(--bg);
+  transition: border-color 0.2s;
+}
+.day-card.done { border-color: rgba(0,224,138,0.35); background: rgba(0,224,138,0.02); }
+
+.day-hdr {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 15px;
+  border-bottom: 1px solid var(--border);
+  background: rgba(255,255,255,0.015);
+}
+.day-num {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 18px;
+  font-weight: 500;
+  color: var(--cyan);
+  min-width: 48px;
+  line-height: 1;
+}
+.day-num small { display: block; font-size: 8px; color: var(--muted); letter-spacing: 1px; margin-top: 2px; }
+.day-name { font-size: 13px; font-weight: 600; flex: 1; }
+.done-tag {
+  display: none;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  color: var(--green);
+  background: rgba(0,224,138,0.1);
+  border: 1px solid rgba(0,224,138,0.3);
+  padding: 3px 9px;
+  border-radius: 20px;
+}
+.day-card.done .done-tag { display: block; }
+
+/* TASKS */
+.task-list { padding: 10px 15px 12px; display: flex; flex-direction: column; gap: 7px; }
+
+.task {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 9px 11px;
+  border-radius: 9px;
+  cursor: pointer;
+  transition: background 0.12s;
+  border: 1px solid transparent;
+  user-select: none;
+}
+.task:hover { background: rgba(255,255,255,0.04); }
+.task.done-task { opacity: 0.5; }
+.task.done-task .task-txt { text-decoration: line-through; color: var(--muted); }
+
+.chk {
+  width: 19px;
+  height: 19px;
+  border-radius: 5px;
+  border: 1.5px solid var(--border2);
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  transition: all 0.15s;
+  margin-top: 1px;
+}
+.task.done-task .chk { background: var(--green); border-color: var(--green); color: #07090f; }
+
+.t-icon { font-size: 14px; flex-shrink: 0; margin-top: 1px; }
+
+.task-content { flex: 1; }
+.task-txt { font-size: 12.5px; line-height: 1.5; }
+.task-sub { font-size: 11px; color: var(--muted); margin-top: 2px; font-family: 'JetBrains Mono', monospace; }
+
+.ttag {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 9px;
+  font-family: 'JetBrains Mono', monospace;
+  padding: 2px 6px;
+  border-radius: 8px;
+  border: 1px solid;
+  margin-left: 6px;
+  vertical-align: middle;
+  letter-spacing: 0.3px;
+  font-weight: 500;
+}
+.tt-food   { border-color: var(--orange); color: var(--orange); background: rgba(255,140,66,0.1); }
+.tt-test   { border-color: var(--yellow); color: var(--yellow); background: rgba(255,209,102,0.1); }
+.tt-water  { border-color: var(--cyan); color: var(--cyan); background: rgba(0,212,255,0.1); }
+.tt-watch  { border-color: var(--purple); color: var(--purple); background: rgba(167,139,250,0.1); }
+.tt-bact   { border-color: var(--green); color: var(--green); background: rgba(0,224,138,0.1); }
+.tt-setup  { border-color: var(--blue); color: var(--blue); background: rgba(68,136,255,0.1); }
+.tt-crit   { border-color: var(--red); color: var(--red); background: rgba(255,68,102,0.1); }
+.tt-done   { border-color: var(--teal); color: var(--teal); background: rgba(45,212,191,0.1); }
+
+/* NOTES */
+.note {
+  margin: 0 15px 13px;
+  padding: 10px 13px;
+  border-radius: 9px;
+  border-left: 3px solid;
+  font-size: 12px;
+  color: var(--muted);
+  line-height: 1.6;
+  background: rgba(255,255,255,0.02);
+}
+.note-info  { border-color: var(--cyan); background: rgba(0,212,255,0.04); }
+.note-warn  { border-color: var(--yellow); background: rgba(255,209,102,0.04); }
+.note-crit  { border-color: var(--red); background: rgba(255,68,102,0.04); }
+.note-good  { border-color: var(--green); background: rgba(0,224,138,0.04); }
+.note-bact  { border-color: var(--purple); background: rgba(167,139,250,0.04); }
+
+.note-lbl {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 1px;
+  font-weight: 600;
+  display: block;
+  margin-bottom: 4px;
+  text-transform: uppercase;
+}
+.note-info .note-lbl  { color: var(--cyan); }
+.note-warn .note-lbl  { color: var(--yellow); }
+.note-crit .note-lbl  { color: var(--red); }
+.note-good .note-lbl  { color: var(--green); }
+.note-bact .note-lbl  { color: var(--purple); }
+
+/* ─── LEGEND ─── */
+.legend-strip {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 24px;
+}
+.leg {
+  background: var(--s1);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 9px 13px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+}
+.leg-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+
+/* ─── INFO TAB ─── */
+.section-title {
+  font-size: 20px;
+  font-weight: 800;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  letter-spacing: -0.3px;
+}
+
+.info-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(270px, 1fr)); gap: 12px; margin-bottom: 28px; }
+
+.info-card {
+  background: var(--s1);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 16px 18px;
+  position: relative;
+  overflow: hidden;
+}
+.info-card::before { content: ''; position: absolute; top: 0; left: 0; width: 3px; height: 100%; }
+.ic-cyan::before   { background: var(--cyan); }
+.ic-red::before    { background: var(--red); }
+.ic-green::before  { background: var(--green); }
+.ic-orange::before { background: var(--orange); }
+.ic-purple::before { background: var(--purple); }
+.ic-yellow::before { background: var(--yellow); }
+
+.info-card h3 { font-size: 13px; font-weight: 700; margin-bottom: 7px; }
+.info-card p  { font-size: 12px; color: var(--muted); line-height: 1.7; }
+
+/* Cycle timeline */
+.cycle-flow {
+  display: flex;
+  gap: 0;
+  background: var(--s1);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  overflow: hidden;
+  margin-bottom: 24px;
+}
+.cf-step {
+  flex: 1;
+  padding: 16px 12px;
+  text-align: center;
+  border-right: 1px solid var(--border);
+  position: relative;
+}
+.cf-step:last-child { border-right: none; }
+.cf-mol { font-family: 'JetBrains Mono', monospace; font-size: 20px; font-weight: 700; line-height: 1; margin-bottom: 3px; }
+.cf-lbl { font-size: 9px; color: var(--dim); letter-spacing: 1px; font-family: 'JetBrains Mono', monospace; }
+.cf-name { font-size: 12px; font-weight: 600; margin: 8px 0 5px; }
+.cf-desc { font-size: 11px; color: var(--muted); line-height: 1.5; }
+.cf-arrow { flex: 0 0 28px; display: flex; align-items: center; justify-content: center; font-size: 16px; color: var(--dim); }
+
+/* Nitrite scale */
+.no2-scale {
+  display: flex;
+  border-radius: 10px;
+  overflow: hidden;
+  height: 34px;
+  margin: 10px 0;
+  border: 1px solid var(--border);
+}
+.ns-block {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  font-weight: 600;
+  gap: 2px;
+}
+.ns-block span { font-size: 8px; font-weight: 400; opacity: 0.8; }
+
+/* Method comparison */
+.method-compare {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin-bottom: 24px;
+}
+.mc-card {
+  background: var(--s1);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 18px;
+}
+.mc-card h3 { font-size: 14px; font-weight: 700; margin-bottom: 10px; }
+.mc-item { display: flex; gap: 8px; margin-bottom: 7px; font-size: 12px; }
+.mc-dot { flex-shrink: 0; margin-top: 4px; width: 6px; height: 6px; border-radius: 50%; }
+
+/* ─── COMMENTS TAB ─── */
+.comment-form {
+  background: var(--s1);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 20px;
+  margin-bottom: 20px;
+}
+.comment-form h2 { font-size: 16px; font-weight: 700; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+
+.form-row { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 10px; }
+.form-col { flex: 1; min-width: 140px; }
+.form-col label {
+  display: block;
+  font-size: 10px;
+  font-family: 'JetBrains Mono', monospace;
+  color: var(--muted);
+  letter-spacing: 0.8px;
+  margin-bottom: 5px;
+  text-transform: uppercase;
+}
+
+select, textarea, input {
+  background: var(--s3);
+  border: 1px solid var(--border);
+  color: var(--text);
+  border-radius: 9px;
+  padding: 9px 12px;
+  font-family: 'Outfit', sans-serif;
+  font-size: 13px;
+  width: 100%;
+  outline: none;
+  transition: border-color 0.2s;
+  -webkit-appearance: none;
+}
+select:focus, textarea:focus, input:focus { border-color: var(--cyan); }
+textarea { resize: vertical; min-height: 75px; line-height: 1.5; }
+
+.btn-add {
+  background: linear-gradient(135deg, var(--cyan), var(--blue));
+  border: none;
+  color: #07090f;
+  font-family: 'Outfit', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  padding: 10px 22px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: opacity 0.15s, transform 0.1s;
+  white-space: nowrap;
+  align-self: flex-end;
+}
+.btn-add:hover { opacity: 0.88; transform: translateY(-1px); }
+
+/* Strip quick log */
+.strip-log {
+  background: var(--s1);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 20px;
+  margin-bottom: 20px;
+}
+.strip-log h2 { font-size: 16px; font-weight: 700; margin-bottom: 6px; display: flex; align-items: center; gap: 8px; }
+.strip-log p { font-size: 12px; color: var(--muted); margin-bottom: 14px; }
+
+.strip-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 10px; margin-bottom: 14px; }
+.sg-item label {
+  display: block;
+  font-size: 10px;
+  font-family: 'JetBrains Mono', monospace;
+  letter-spacing: 0.8px;
+  margin-bottom: 4px;
+}
+
+/* Comments list */
+.empty-state { text-align: center; padding: 52px 20px; color: var(--dim); }
+.empty-state .ei { font-size: 44px; margin-bottom: 12px; }
+.empty-state p { font-size: 13px; color: var(--muted); }
+
+.c-list { display: flex; flex-direction: column; gap: 11px; }
+
+.c-entry {
+  background: var(--s1);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 13px 15px;
+  position: relative;
+  overflow: hidden;
+}
+.c-entry::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; }
+.c-normal::before  { background: var(--cyan); }
+.c-test::before    { background: var(--yellow); }
+.c-cambio::before  { background: var(--blue); }
+.c-alerta::before  { background: var(--red); }
+.c-bien::before    { background: var(--green); }
+
+.c-meta { display: flex; align-items: center; gap: 8px; margin-bottom: 7px; flex-wrap: wrap; }
+.c-date { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--muted); }
+.c-type-badge {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.8px;
+  padding: 2px 7px;
+  border-radius: 8px;
+  border: 1px solid;
+  text-transform: uppercase;
+}
+.c-normal .c-type-badge  { border-color: var(--cyan); color: var(--cyan); }
+.c-test .c-type-badge    { border-color: var(--yellow); color: var(--yellow); }
+.c-cambio .c-type-badge  { border-color: var(--blue); color: var(--blue); }
+.c-alerta .c-type-badge  { border-color: var(--red); color: var(--red); }
+.c-bien .c-type-badge    { border-color: var(--green); color: var(--green); }
+
+.c-dayref { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--dim); margin-left: auto; }
+.c-text { font-size: 13px; line-height: 1.6; }
+.c-del {
+  position: absolute; top: 10px; right: 12px;
+  background: rgba(255,68,102,0.1);
+  border: 1px solid rgba(255,68,102,0.25);
+  color: var(--red);
+  font-size: 11px;
+  font-family: 'JetBrains Mono', monospace;
+  padding: 3px 8px;
+  border-radius: 7px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.c-del:hover { background: rgba(255,68,102,0.22); }
+
+/* Responsive */
+@media (max-width: 640px) {
+  .dash-top { grid-template-columns: 1fr; }
+  .cycle-flow { flex-direction: column; }
+  .cf-step { border-right: none; border-bottom: 1px solid var(--border); }
+  .cf-arrow { transform: rotate(90deg); }
+  .method-compare { grid-template-columns: 1fr; }
+  .tabs-bar { padding: 0 10px; }
+  header { padding: 0 14px; }
+  main { padding: 18px 12px 60px; }
+  .setup-card { padding: 28px 20px; }
+  .option-grid.cols4 { grid-template-columns: repeat(2, 1fr); }
+}
+
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+</style>
+</head>
+<body>
+
+<div class="bubbles" id="bubbles"></div>
+
+<!-- ═══════════════════ SETUP SCREEN ═══════════════════ -->
+<div id="setupScreen">
+  <div class="setup-card">
+    <span class="setup-logo">🌊</span>
+    <h1>AquaCiclo</h1>
+    <p class="tagline">GUÍA DE CICLADO · FISHLESS · PERSONALIZADA</p>
+
+    <div class="setup-section">
+      <label>🪣 Tamaño de tu acuario</label>
+      <div class="option-grid cols4" id="sizeGrid">
+        <button class="opt-btn" data-val="20" onclick="selectOpt(this,'size')">
+          <span class="opt-icon">🪣</span>
+          <span class="opt-val">20L</span>
+          <span class="opt-lbl">Nano / Betta</span>
+        </button>
+        <button class="opt-btn" data-val="40" onclick="selectOpt(this,'size')">
+          <span class="opt-icon">🐠</span>
+          <span class="opt-val">40L</span>
+          <span class="opt-lbl">Pequeño</span>
+        </button>
+        <button class="opt-btn" data-val="80" onclick="selectOpt(this,'size')">
+          <span class="opt-icon">🐟</span>
+          <span class="opt-val">80L</span>
+          <span class="opt-lbl">Mediano</span>
+        </button>
+        <button class="opt-btn" data-val="100" onclick="selectOpt(this,'size')">
+          <span class="opt-icon">🦈</span>
+          <span class="opt-val">100L</span>
+          <span class="opt-lbl">Grande</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="setup-section">
+      <label>🧫 Método de ciclado</label>
+      <div class="option-grid cols2" style="gap:10px;">
+        <div class="method-card" data-val="sin" onclick="selectOpt(this,'method')">
+          <div class="method-icon">🕐</div>
+          <div class="method-info">
+            <h3>Sin bacterias embotelladas</h3>
+            <p>Ciclado natural. Las bacterias colonizan solas. Más lento (4-6 semanas) pero más económico y con colonias más robustas.</p>
+          </div>
+        </div>
+        <div class="method-card" data-val="con" onclick="selectOpt(this,'method')">
+          <div class="method-icon">⚡</div>
+          <div class="method-info">
+            <h3>Con bacterias embotelladas</h3>
+            <p>Acelera el proceso significativamente. Puedes tener el ciclo completo en 1-2 semanas. Ideal si tienes prisa.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="setup-section">
+      <label>🧪 Tipo de tiras de prueba</label>
+      <div class="strips-row" id="stripsGrid">
+        <div class="strip-opt" data-val="7en1" onclick="selectOpt(this,'strips')">
+          <span class="strip-icon">🧪</span>
+          Tiras 7-en-1<br><span style="font-size:10px;color:var(--muted);">(sin amoniaco)</span>
+        </div>
+        <div class="strip-opt" data-val="completo" onclick="selectOpt(this,'strips')">
+          <span class="strip-icon">🔬</span>
+          Tiras con amoniaco<br><span style="font-size:10px;color:var(--muted);">o kit líquido</span>
+        </div>
+      </div>
+    </div>
+
+    <button class="btn-start" id="btnStart" disabled onclick="startApp()">
+      → Generar mi plan de ciclado
+    </button>
+  </div>
+</div>
+
+<!-- ═══════════════════ MAIN APP ═══════════════════ -->
+<div id="app">
+
+  <header>
+    <div class="header-inner">
+      <div class="app-logo">🌊 AquaCiclo</div>
+      <div class="config-pills" id="configPills"></div>
+      <button class="btn-reset" onclick="resetApp()">↺ Cambiar config</button>
+    </div>
+  </header>
+
+  <nav class="tabs-bar">
+    <button class="tab-btn active" onclick="openTab('plan')" id="tab-plan"><span>📅</span> Plan de Ciclado</button>
+    <button class="tab-btn" onclick="openTab('info')" id="tab-info"><span>🔬</span> Información</button>
+    <button class="tab-btn" onclick="openTab('comments')" id="tab-comments"><span>💬</span> Mi Progreso <span id="cbadge" style="display:none;background:var(--cyan);color:#07090f;font-size:9px;font-family:'JetBrains Mono',monospace;padding:1px 6px;border-radius:8px;margin-left:4px;"></span></button>
+  </nav>
+
+  <main>
+
+    <!-- PLAN TAB -->
+    <div class="tab-panel active" id="panel-plan">
+      <div class="dash-top">
+        <div>
+          <div class="dash-title">Plan de Ciclado <span id="dash-sub"></span></div>
+        </div>
+        <div class="stats-row">
+          <div class="stat-box"><div class="v" id="s-done" style="color:var(--cyan)">0</div><div class="l">TAREAS</div></div>
+          <div class="stat-box"><div class="v" id="s-days" style="color:var(--purple)">0</div><div class="l">DÍAS</div></div>
+          <div class="stat-box"><div class="v" id="s-pct" style="color:var(--green)">0%</div><div class="l">AVANCE</div></div>
+        </div>
+      </div>
+
+      <div class="progress-hero" id="progHero">
+        <div class="ph-row">
+          <span class="ph-label">🌊 Progreso del Ciclado</span>
+          <span class="ph-pct" id="bigPct">0%</span>
+        </div>
+        <div class="track"><div class="track-fill" id="trackFill" style="width:0%"></div></div>
+        <div class="phase-row" id="phaseRow"></div>
+      </div>
+
+      <div class="legend-strip">
+        <div class="leg"><div class="leg-dot" style="background:var(--orange)"></div>🍖 Comida (amoniaco)</div>
+        <div class="leg"><div class="leg-dot" style="background:var(--yellow)"></div>🧪 Prueba con tira</div>
+        <div class="leg"><div class="leg-dot" style="background:var(--cyan)"></div>💧 Cambio de agua</div>
+        <div class="leg"><div class="leg-dot" style="background:var(--purple)"></div>👀 Observar</div>
+        <div class="leg" id="legBact" style="display:none"><div class="leg-dot" style="background:var(--green)"></div>🧫 Bacterias</div>
+      </div>
+
+      <div id="weeksContainer"></div>
+    </div>
+
+    <!-- INFO TAB -->
+    <div class="tab-panel" id="panel-info">
+
+      <div class="info-section" style="margin-bottom:28px;">
+        <div class="section-title">🔁 El Ciclo del Nitrógeno</div>
+        <div class="info-card ic-cyan" style="margin-bottom:14px;">
+          <p>El ciclado establece colonias de bacterias beneficiosas (<em>Nitrosomonas</em> y <em>Nitrobacter</em>) en tu filtro y sustrato. Sin estas bacterias el agua es tóxica para cualquier pez. El proceso convierte el amoniaco de la materia orgánica en nitritos y luego en nitratos, mucho menos peligrosos.</p>
+        </div>
+        <div class="cycle-flow">
+          <div class="cf-step">
+            <div class="cf-mol" style="color:var(--orange)">NH₃</div>
+            <div class="cf-lbl">AMONIACO</div>
+            <div class="cf-name">Fuente tóxica</div>
+            <div class="cf-desc">Generado por comida y desechos. Las Nitrosomonas lo consumen.</div>
+          </div>
+          <div class="cf-arrow">→</div>
+          <div class="cf-step">
+            <div class="cf-mol" style="color:var(--red)">NO₂</div>
+            <div class="cf-lbl">NITRITOS</div>
+            <div class="cf-name">Indicador clave</div>
+            <div class="cf-desc">Sube en semana 1-2, luego baja a 0. Tu semáforo principal.</div>
+          </div>
+          <div class="cf-arrow">→</div>
+          <div class="cf-step">
+            <div class="cf-mol" style="color:var(--green)">NO₃</div>
+            <div class="cf-lbl">NITRATOS</div>
+            <div class="cf-name">Producto final</div>
+            <div class="cf-desc">Se acumulan al avanzar el ciclo. Se controlan con cambios de agua.</div>
+          </div>
+          <div class="cf-arrow">→</div>
+          <div class="cf-step">
+            <div class="cf-mol" style="color:var(--teal)">✅</div>
+            <div class="cf-lbl">COMPLETO</div>
+            <div class="cf-name">¡Listo para peces!</div>
+            <div class="cf-desc">NO₂ = 0, NO₃ presente y estable. Agua clara.</div>
+          </div>
+        </div>
+      </div>
+
+      <div style="margin-bottom:28px;">
+        <div class="section-title">🧪 Lectura de tiras</div>
+        <div class="info-grid">
+          <div class="info-card ic-red">
+            <h3>🔴 Nitritos (NO₂) — Tu semáforo</h3>
+            <p>El parámetro más importante durante el ciclado. Empieza en 0, sube (señal de progreso), llega a un pico, y luego baja de regreso a 0. Cuando llega a 0 con nitratos presentes: ciclo completo.</p>
+            <div class="no2-scale">
+              <div class="ns-block" style="background:#0f2a1a;color:#4ade80;">0<span>BIEN</span></div>
+              <div class="ns-block" style="background:#1a2e14;color:#a3e635;">0.5<span>INICIO</span></div>
+              <div class="ns-block" style="background:#2a2a10;color:#facc15;">1<span>SUBE</span></div>
+              <div class="ns-block" style="background:#2a1a10;color:#fb923c;">2<span>PICO</span></div>
+              <div class="ns-block" style="background:#2a0f0f;color:#f87171;">5+<span>ALTO</span></div>
+            </div>
+          </div>
+          <div class="info-card ic-green">
+            <h3>🟢 Nitratos (NO₃) — Confirmación</h3>
+            <p>Empiezan a acumularse cuando las bacterias Nitrobacter colonizan el filtro. Ver nitratos subiendo junto con nitritos bajando es la señal más positiva del proceso. Al finalizar deben estar entre 5-40 ppm.</p>
+          </div>
+          <div class="info-card ic-cyan">
+            <h3>🔵 pH — Estabilidad crucial</h3>
+            <p>Las bacterias nitrificantes necesitan pH entre 6.5 y 8.0. Fuera de ese rango el ciclo se detiene. Si baja de 6.5, haz un cambio de agua del 25-30% para subirlo. El pH ideal para la mayoría de peces tropicales es 6.8-7.5.</p>
+          </div>
+          <div class="info-card ic-orange">
+            <h3>🟠 Amoniaco (NH₃)</h3>
+            <p>Si tus tiras lo miden: útil para confirmar que hay fuente de amoniaco activa. Si no lo miden (tiras 7-en-1 sin amoniaco): usa los nitritos como indicador indirecto. Mientras NO₂ suba, el amoniaco está siendo procesado.</p>
+          </div>
+          <div class="info-card ic-yellow">
+            <h3>🟡 KH — Buffer del pH</h3>
+            <p>La dureza de carbonatos actúa como "amortiguador" del pH. Con KH bajo (menos de 3°dKH / 53 ppm) el pH puede caer bruscamente y detener el ciclo. Si está muy bajo, usa bicarbonato de sodio (1/4 cucharadita por 40L).</p>
+          </div>
+          <div class="info-card ic-purple">
+            <h3>💜 GH — Dureza general</h3>
+            <p>Menos crítico durante el ciclado, pero relevante según los peces que planeas tener. Peces de agua blanda prefieren GH bajo, mientras que peces africanos o livebearers prefieren GH alto.</p>
+          </div>
+        </div>
+      </div>
+
+      <div style="margin-bottom:28px;" id="infoBactSection">
+        <div class="section-title">🧫 Métodos de ciclado comparados</div>
+        <div class="method-compare">
+          <div class="mc-card">
+            <h3 style="color:var(--muted)">⏳ Sin bacterias embotelladas</h3>
+            <div class="mc-item"><div class="mc-dot" style="background:var(--green)"></div><span>Bacterias más robustas y adaptadas</span></div>
+            <div class="mc-item"><div class="mc-dot" style="background:var(--green)"></div><span>Más económico</span></div>
+            <div class="mc-item"><div class="mc-dot" style="background:var(--green)"></div><span>Sin dependencia de productos externos</span></div>
+            <div class="mc-item"><div class="mc-dot" style="background:var(--red)"></div><span>4-6 semanas (a veces más)</span></div>
+            <div class="mc-item"><div class="mc-dot" style="background:var(--red)"></div><span>Proceso más lento e impredecible</span></div>
+          </div>
+          <div class="mc-card">
+            <h3 style="color:var(--cyan)">⚡ Con bacterias embotelladas</h3>
+            <div class="mc-item"><div class="mc-dot" style="background:var(--green)"></div><span>Proceso acelerado (1-3 semanas)</span></div>
+            <div class="mc-item"><div class="mc-dot" style="background:var(--green)"></div><span>Más predecible y controlado</span></div>
+            <div class="mc-item"><div class="mc-dot" style="background:var(--green)"></div><span>Ideal si necesitas apurar el proceso</span></div>
+            <div class="mc-item"><div class="mc-dot" style="background:var(--red)"></div><span>Costo adicional</span></div>
+            <div class="mc-item"><div class="mc-dot" style="background:var(--red)"></div><span>Calidad variable según marca</span></div>
+            <div class="mc-item"><div class="mc-dot" style="background:var(--yellow)"></div><span>Marcas recomendadas: Tetra SafeStart, Dr. Tim's, Fritz Turbo 700, API Quick Start</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div style="margin-bottom:28px;">
+        <div class="section-title">⚠️ Señales de alerta y soluciones</div>
+        <div class="info-grid">
+          <div class="info-card ic-red">
+            <h3>❌ Nitritos no suben en 12-14 días</h3>
+            <p>Causas: temperatura menor de 24°C, pH fuera de rango, cloro residual (revisar declorinador), o no hay suficiente materia orgánica. Agregar comida extra 1-2 días puede ayudar.</p>
+          </div>
+          <div class="info-card ic-red">
+            <h3>❌ Nitritos en pico por más de 10 días</h3>
+            <p>Cambio de agua del 20-25% para aliviar el estrés bacteriano. No hagas cambios grandes o reseteas la colonia. Las bacterias Nitrobacter tardan más en establecerse.</p>
+          </div>
+          <div class="info-card ic-orange">
+            <h3>⚠️ Agua turbia o con olor</h3>
+            <p>Turbidez lechosa en semana 1-2: normal (bacterias heterótrofas). Olor a tierra mojada: normal. Olor a huevo podrido: posible zona anaeróbica en el sustrato, airearlo suavemente.</p>
+          </div>
+          <div class="info-card ic-green">
+            <h3>✅ Ciclado completo — criterios</h3>
+            <p>1) NO₂ = 0 en dos lecturas con 24-48h de diferencia. 2) NO₃ presente y estable (5-40 ppm). 3) pH estable. 4) Agua clara. Haz cambio de agua 25% y espera 24h antes de introducir peces.</p>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div class="section-title">💧 Cambios de agua durante el ciclado</div>
+        <div class="info-card ic-cyan">
+          <h3>¿Cuándo y cuánto?</h3>
+          <p>Durante el ciclado <strong>evita cambios de agua frecuentes</strong> o removiste las bacterias que están estableciéndose. Solo haz cambio de agua si: los nitratos superan 80 ppm, el pH baja de 6.5, o los nitritos llevan más de 10 días en pico alto. En esos casos: 20-25% máximo. Siempre usa agua declorinada a la misma temperatura.</p>
+          <p style="margin-top:8px;"><strong>Importante:</strong> NUNCA laves el bio-media del filtro con agua de llave. Si necesitas limpiar el filtro, usa agua extraída de la propia pecera.</p>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- COMMENTS TAB -->
+    <div class="tab-panel" id="panel-comments">
+
+      <div class="comment-form">
+        <h2>📝 Registrar observación</h2>
+        <div class="form-row">
+          <div class="form-col">
+            <label>Día del ciclado</label>
+            <select id="cDay"></select>
+          </div>
+          <div class="form-col">
+            <label>Tipo de nota</label>
+            <select id="cType">
+              <option value="normal">📝 Observación general</option>
+              <option value="test">🧪 Resultado de tira</option>
+              <option value="cambio">💧 Cambio de agua</option>
+              <option value="alerta">⚠️ Alerta / problema</option>
+              <option value="bien">✅ Todo bien</option>
+            </select>
+          </div>
+        </div>
+        <div style="margin-bottom:10px;">
+          <label style="font-size:10px;font-family:'JetBrains Mono',monospace;color:var(--muted);letter-spacing:0.8px;display:block;margin-bottom:5px;text-transform:uppercase;">Comentario</label>
+          <textarea id="cText" placeholder="Ej: Nitritos empezaron a subir, agua ligeramente turbia. pH estable en 7.0..."></textarea>
+        </div>
+        <button class="btn-add" onclick="addComment()">+ Agregar nota</button>
+      </div>
+
+      <div class="strip-log">
+        <h2>🧪 Registro rápido de tira</h2>
+        <p>Registra los valores directamente. Los campos vacíos se ignoran.</p>
+        <div class="strip-grid">
+          <div class="sg-item">
+            <label style="color:var(--red)">NO₂ NITRITOS</label>
+            <select id="sNo2"><option value="">--</option><option>0</option><option>0.5</option><option>1</option><option>2</option><option>5</option><option>10+</option></select>
+          </div>
+          <div class="sg-item">
+            <label style="color:var(--green)">NO₃ NITRATOS</label>
+            <select id="sNo3"><option value="">--</option><option>0</option><option>10</option><option>20</option><option>40</option><option>80</option><option>160+</option></select>
+          </div>
+          <div class="sg-item" id="sNh3Wrap">
+            <label style="color:var(--orange)">NH₃ AMONIACO</label>
+            <select id="sNh3"><option value="">--</option><option>0</option><option>0.25</option><option>0.5</option><option>1</option><option>2</option><option>4+</option></select>
+          </div>
+          <div class="sg-item">
+            <label style="color:var(--cyan)">pH</label>
+            <select id="sPh"><option value="">--</option><option>6.0</option><option>6.5</option><option>6.8</option><option>7.0</option><option>7.2</option><option>7.5</option><option>8.0</option><option>8.5+</option></select>
+          </div>
+          <div class="sg-item">
+            <label style="color:var(--yellow)">KH</label>
+            <select id="sKh"><option value="">--</option><option>0</option><option>40</option><option>80</option><option>120</option><option>180</option><option>240+</option></select>
+          </div>
+          <div class="sg-item">
+            <label style="color:var(--muted)">DÍA</label>
+            <select id="sDay"></select>
+          </div>
+        </div>
+        <button class="btn-add" onclick="logStrip()">📊 Registrar tira</button>
+      </div>
+
+      <div id="emptyState" class="empty-state">
+        <div class="ei">💬</div>
+        <p>Sin observaciones todavía.<br>Registra tus notas aquí conforme avanza el ciclado.</p>
+      </div>
+      <div class="c-list" id="cList"></div>
+
+    </div>
+
+  </main>
+</div>
+
+<script>
+// ─── CONFIG ───
+let CFG = { size: null, method: null, strips: null };
+
+function selectOpt(el, key) {
+  const parent = el.closest('.option-grid, .strips-row, .setup-section');
+  parent.querySelectorAll('.opt-btn, .method-card, .strip-opt').forEach(b => b.classList.remove('selected'));
+  el.classList.add('selected');
+  CFG[key] = el.dataset.val;
+  document.getElementById('btnStart').disabled = !(CFG.size && CFG.method && CFG.strips);
+}
+
+// ─── BUBBLES ───
+function buildBubbles() {
+  const c = document.getElementById('bubbles');
+  for (let i = 0; i < 20; i++) {
+    const b = document.createElement('div');
+    b.className = 'bubble';
+    const sz = 4 + Math.random() * 12;
+    b.style.cssText = `left:${Math.random()*100}%;width:${sz}px;height:${sz}px;animation-duration:${9+Math.random()*20}s;animation-delay:${Math.random()*15}s;opacity:${0.15+Math.random()*0.25};`;
+    c.appendChild(b);
+  }
+}
+
+// ─── PLAN DATA ───
+function getFoodAmount(size) {
+  if (size == 20) return '3 pellets o un pellizco pequeño de comida en hojuelas';
+  if (size == 40) return '5-6 pellets o una pizca de comida en hojuelas';
+  if (size == 80) return '8-10 pellets o 1/4 cucharadita de comida en hojuelas';
+  return '12-15 pellets o 1/3 cucharadita de comida en hojuelas';
+}
+function getWaterChange(size) { return Math.round(size * 0.25) + 'L'; }
+function getDuration(method) { return method === 'con' ? '~14-21 días' : '~28-42 días'; }
+function getWeeks(method) { return method === 'con' ? 3 : 5; }
+
+function buildPlan(cfg) {
+  const food = getFoodAmount(cfg.size);
+  const wc = getWaterChange(cfg.size);
+  const withBact = cfg.method === 'con';
+  const hasNh3 = cfg.strips === 'completo';
+  const dur = getDuration(cfg.method);
+
+  const day0 = {
+    day: 0, label: 'Día 0', name: 'Armado y configuración de la pecera',
+    tasks: [
+      { id: 'd0t1', icon: '🪣', text: 'Instalar sustrato limpio (arena o grava lavada)', tag: 'setup', tagLabel: 'SETUP' },
+      { id: 'd0t2', icon: '🌡️', text: 'Instalar calentador y ajustar a 26-28°C', tag: 'setup', tagLabel: 'SETUP' },
+      { id: 'd0t3', icon: '🔄', text: 'Instalar filtro y verificar flujo correcto', tag: 'setup', tagLabel: 'SETUP' },
+      { id: 'd0t4', icon: '🌿', text: 'Añadir decoración y plantas (opcional)', tag: 'setup', tagLabel: 'SETUP' },
+      { id: 'd0t5', icon: '💧', text: `Llenar con agua de llave tratada con declorinador (para ${cfg.size}L)`, tag: 'water', tagLabel: 'AGUA' },
+      { id: 'd0t6', icon: '⚡', text: 'Encender filtro y calentador, verificar temperatura y que no haya fugas', tag: 'setup', tagLabel: 'SETUP' },
+      withBact ? { id: 'd0t7', icon: '🧫', text: 'Agregar bacterias embotelladas según dosis del fabricante para tu tamaño de acuario', tag: 'bact', tagLabel: 'BACTERIAS' } : null,
+      { id: 'd0t8', icon: '🍖', text: `Agregar primera dosis de comida: ${food} — fuente de amoniaco orgánico`, tag: 'food', tagLabel: 'COMIDA/NH₃' },
+    ].filter(Boolean),
+    note: withBact
+      ? { type: 'bact', label: 'CON BACTERIAS EMBOTELLADAS', text: `El proceso será significativamente más rápido (1-2 semanas). Las bacterias del frasco necesitan amoniaco como alimento inmediato, por eso agregas la comida el mismo día. Mantén el filtro encendido 24/7.` }
+      : { type: 'info', label: '¿POR QUÉ LA COMIDA HOY?', text: `La comida de pez se descompone y libera amoniaco orgánico de forma gradual. Es la fuente perfecta para el ciclado fishless. No pongas más cantidad: demasiado amoniaco puede inhibir las bacterias.` }
+  };
+
+  const weeks = [];
+
+  // WEEK 0 — Setup
+  weeks.push({ weekNum: 0, title: 'Día 0 — Armado inicial', subtitle: 'Configuración completa de la pecera', color: '#00d4ff', badge: 'SETUP', days: [day0] });
+
+  if (withBact) {
+    // CON BACTERIAS: 3 semanas más cortas
+    weeks.push({
+      weekNum: 1, title: 'Semana 1 — Establecimiento bacteriano', subtitle: 'Días 1-7 · Las bacterias del frasco colonizan activamente',
+      color: '#a78bfa', badge: 'BACTERIAS', days: [
+        { day:1, label:'Día 1', name:'Comida + verificación', tasks:[
+          {id:'b1t1',icon:'🍖',text:`${food}`,tag:'food',tagLabel:'COMIDA/NH₃'},
+          {id:'b1t2',icon:'🌡️',text:'Verificar temperatura 26-28°C',tag:'watch',tagLabel:'CHECAR'},
+          {id:'b1t3',icon:'👀',text:'Observar: flujo del filtro correcto, sin fugas',tag:'watch',tagLabel:'OBSERVAR'},
+        ]},
+        { day:3, label:'Día 3', name:`🧪 Primera prueba`, tasks:[
+          {id:'b3t1',icon:'🍖',text:`${food}`,tag:'food',tagLabel:'COMIDA/NH₃'},
+          {id:'b3t2',icon:'🧪',text:`Prueba con tira: NO₂ y NO₃${hasNh3?' y NH₃':''}. Con bacterias embotelladas puedes ver movimiento ya desde el día 3.`,tag:'test',tagLabel:'TIRA'},
+          {id:'b3t3',icon:'📝',text:'Registrar resultados en Mi Progreso',tag:'watch',tagLabel:'REGISTRAR'},
+        ], note:{type:'bact',label:'CON BACTERIAS — DÍA 3',text:'Es posible que ya haya algo de nitritos presentes. Si están en 0 todavía, no te preocupes, algunas marcas tardan un poco más en activarse. Continúa la rutina.'}},
+        { day:5, label:'Día 5', name:'Comida diaria', tasks:[
+          {id:'b5t1',icon:'🍖',text:`${food}`,tag:'food',tagLabel:'COMIDA/NH₃'},
+          {id:'b5t2',icon:'👀',text:'Observar turbidez y color del agua',tag:'watch',tagLabel:'OBSERVAR'},
+        ]},
+        { day:7, label:'Día 7', name:`🧪 Tira semanal`, tasks:[
+          {id:'b7t1',icon:'🍖',text:`${food}`,tag:'food',tagLabel:'COMIDA/NH₃'},
+          {id:'b7t2',icon:'🧪',text:`Tira completa: NO₂, NO₃, pH, KH${hasNh3?', NH₃':''}. Comparar con día 3.`,tag:'test',tagLabel:'TIRA'},
+          {id:'b7t3',icon:'📝',text:'Registrar. Con bacterias embotelladas deberían verse nitritos subiendo.',tag:'watch',tagLabel:'REGISTRAR'},
+        ], note:{type:'info',label:'SEMANA 1 — ESPERADO',text:'Con bacterias embotelladas: los nitritos deberían estar subiendo claramente. Si ya están bajando: ¡el ciclo avanza muy rápido! Si aún en 0: revisa temperatura y pH, pueden estar inhibiendo las bacterias.'}},
+      ]
+    });
+    weeks.push({
+      weekNum: 2, title: 'Semana 2 — Pico y bajada de nitritos', subtitle: 'Días 8-14 · El proceso se acelera con las bacterias establecidas',
+      color: '#ef4444', badge: 'PICO', days: [
+        { day:8, label:'Día 8', name:'Comida + observación', tasks:[
+          {id:'c8t1',icon:'🍖',text:`${food}`,tag:'food',tagLabel:'COMIDA/NH₃'},
+          {id:'c8t2',icon:'👀',text:'El agua debe ir aclarándose gradualmente',tag:'watch',tagLabel:'OBSERVAR'},
+        ]},
+        { day:10, label:'Día 10', name:`🧪 Tira de evaluación`, tasks:[
+          {id:'c10t1',icon:'🍖',text:`${food}`,tag:'food',tagLabel:'COMIDA/NH₃'},
+          {id:'c10t2',icon:'🧪',text:`Tira: NO₂, NO₃${hasNh3?', NH₃':''}. Si NO₂ baja = señal de que el final se acerca.`,tag:'test',tagLabel:'TIRA'},
+          {id:'c10t3',icon:'💧',text:`Si NO₃ > 40 ppm: cambio de agua del 25% (${wc})`,tag:'water',tagLabel:'AGUA CONDICIONAL'},
+        ]},
+        { day:12, label:'Día 12', name:'Comida', tasks:[{id:'c12t1',icon:'🍖',text:`${food}`,tag:'food',tagLabel:'COMIDA/NH₃'}]},
+        { day:14, label:'Día 14', name:`🧪 Tira + posible verificación final`, tasks:[
+          {id:'c14t1',icon:'🍖',text:`${food}`,tag:'food',tagLabel:'COMIDA/NH₃'},
+          {id:'c14t2',icon:'🧪',text:`Tira completa: NO₂, NO₃, pH${hasNh3?', NH₃':''}. Con bacterias embotelladas puede estar completado.`,tag:'test',tagLabel:'TIRA CRÍTICA'},
+          {id:'c14t3',icon:'💧',text:`Cambio de agua 25% (${wc}) con declorinador. Preparar para peces si NO₂ = 0.`,tag:'water',tagLabel:'CAMBIO'},
+        ], note:{type:'good',label:'✅ POSIBLE CICLADO COMPLETO',text:`Si NO₂ = 0 y NO₃ presente: espera 24-48h y haz otra prueba confirmatoria. Si se mantiene: ¡el ciclado está listo! Con bacterias embotelladas esto puede ocurrir entre día 10-21 dependiendo de la marca y condiciones.`}},
+      ]
+    });
+    weeks.push({
+      weekNum: 3, title: 'Semana 3 — Verificación y extensión si es necesario', subtitle: 'Días 15-21 · Si el ciclo no completó en semana 2',
+      color: '#22c55e', badge: 'FINAL', days: [
+        { day:15, label:'Día 15+', name:'Si NO₂ aún no llegó a 0', tasks:[
+          {id:'e15t1',icon:'🍖',text:`${food} — continuar rutina`,tag:'food',tagLabel:'COMIDA/NH₃'},
+          {id:'e15t2',icon:'🧪',text:'Tira cada 2-3 días para monitorear bajada de nitritos',tag:'test',tagLabel:'TIRA'},
+        ], note:{type:'warn',label:'NORMAL TARDAR UN POCO MÁS',text:'Algunas marcas de bacterias embotelladas tardan un poco más dependiendo de las condiciones del agua. Sigue la rutina y monitorea cada 2-3 días.'}},
+        { day:21, label:'Día 21', name:`🧪 Verificación final`, tasks:[
+          {id:'e21t1',icon:'🧫',text:'Dosis adicional de bacterias embotelladas si el ciclo no ha avanzado suficiente (opcional)',tag:'bact',tagLabel:'BACTERIAS'},
+          {id:'e21t2',icon:'🧪',text:`Tira confirmatoria: NO₂ = 0, NO₃ presente. pH y KH estables.`,tag:'test',tagLabel:'TIRA FINAL'},
+          {id:'e21t3',icon:'💧',text:`Cambio de agua 25% (${wc}) pre-introducción de peces`,tag:'water',tagLabel:'CAMBIO FINAL'},
+          {id:'e21t4',icon:'🐟',text:'Si todos los criterios se cumplen: ¡peces pueden entrar con aclimatación gradual!',tag:'done',tagLabel:'LISTO'},
+        ], note:{type:'good',label:'🎉 CRITERIOS DE CICLADO COMPLETO',text:'NO₂ = 0 en dos lecturas separadas. NO₃ > 0 y estable. pH 6.8-7.5. Agua clara. Haz cambio de agua 25%, espera 24h y aclimata a los peces: flota la bolsa 15 min, agrega agua de la pecera poco a poco, suelta con red.'}},
+      ]
+    });
+  } else {
+    // SIN BACTERIAS: plan completo 5 semanas
+    weeks.push({
+      weekNum:1, title:'Semana 1 — Inicio del proceso', subtitle:'Días 1-7 · Las bacterias comienzan a colonizar',
+      color:'#ff8c42', badge:'INICIO', days:[
+        {day:1,label:'Día 1',name:'Rutina establecida',tasks:[
+          {id:'n1t1',icon:'🍖',text:`${food}`,tag:'food',tagLabel:'COMIDA/NH₃'},
+          {id:'n1t2',icon:'👀',text:'Observar: filtro funcionando, temperatura correcta, sin fugas',tag:'watch',tagLabel:'OBSERVAR'},
+          {id:'n1t3',icon:'🌡️',text:'Verificar temperatura 26-28°C',tag:'watch',tagLabel:'CHECAR'},
+        ]},
+        {day:3,label:'Día 3',name:'Comida + observación',tasks:[
+          {id:'n3t1',icon:'🍖',text:`${food}`,tag:'food',tagLabel:'COMIDA/NH₃'},
+          {id:'n3t2',icon:'👀',text:'Observar turbidez: puede aparecer una turbidez lechosa (normal en los primeros días)',tag:'watch',tagLabel:'OBSERVAR'},
+        ], note:{type:'info',label:'TURBIDEZ NORMAL',text:'Una turbidez blanco-lechosa en los primeros días es una explosión bacteriana heterótrofa. No son las bacterias nitrificantes que queremos, pero es parte normal del proceso. Aclarará sola.'}},
+        {day:5,label:'Día 5',name:'Comida',tasks:[
+          {id:'n5t1',icon:'🍖',text:`${food}`,tag:'food',tagLabel:'COMIDA/NH₃'},
+          {id:'n5t2',icon:'🌡️',text:'Verificar temperatura constante',tag:'watch',tagLabel:'CHECAR'},
+        ]},
+        {day:7,label:'Día 7',name:'🧪 Primera prueba con tira',tasks:[
+          {id:'n7t1',icon:'🍖',text:`${food}`,tag:'food',tagLabel:'COMIDA/NH₃'},
+          {id:'n7t2',icon:'🧪',text:`Primera tira 7-en-1: medir NO₂ y NO₃${hasNh3?', NH₃':''}. Anotar como punto de referencia.`,tag:'test',tagLabel:'TIRA'},
+          {id:'n7t3',icon:'📝',text:'Registrar en Mi Progreso — aunque salga todo en 0, es el punto de partida',tag:'watch',tagLabel:'REGISTRAR'},
+        ], note:{type:'info',label:'¿QUÉ ESPERAR EN DÍA 7?',text:'Lo normal es que NO₂ esté en 0 o apenas en 0.5. No te preocupes si todo sigue en 0. Los nitritos suelen empezar a aparecer entre el día 8-14 en ciclado natural. Esta primera tira es solo para tener referencia.'}},
+      ]
+    });
+    weeks.push({
+      weekNum:2, title:'Semana 2 — Los nitritos deben aparecer', subtitle:'Días 8-14 · Momento crítico del ciclado',
+      color:'#ef4444', badge:'NITRITOS↑', days:[
+        {day:8,label:'Día 8',name:'Comida + observación',tasks:[
+          {id:'n8t1',icon:'🍖',text:`${food}`,tag:'food',tagLabel:'COMIDA/NH₃'},
+          {id:'n8t2',icon:'👀',text:'¿El agua va aclarando? ¿Hay burbujeo normal en el filtro?',tag:'watch',tagLabel:'OBSERVAR'},
+        ]},
+        {day:10,label:'Día 10',name:'🧪 Segunda prueba — evaluación clave',tasks:[
+          {id:'n10t1',icon:'🍖',text:`${food}`,tag:'food',tagLabel:'COMIDA/NH₃'},
+          {id:'n10t2',icon:'🧪',text:`Tira: NO₂ y NO₃${hasNh3?', NH₃':''}. Comparar con día 7.`,tag:'test',tagLabel:'TIRA'},
+          {id:'n10t3',icon:'📝',text:'¿Subieron nitritos? Registrar en Mi Progreso.',tag:'watch',tagLabel:'REGISTRAR'},
+        ], note:{type:'warn',label:'⚠️ SI NO₂ SIGUE EN 0 — DÍA 10',text:`Si a día 10 no hay movimiento en nitritos: agregar una porción extra de comida por 3 días. Verificar temperatura (mínimo 24°C). Revisar que el declorinador se aplicó correctamente. pH entre 6.5-8.0 es necesario.`}},
+        {day:12,label:'Día 12',name:'Comida',tasks:[{id:'n12t1',icon:'🍖',text:`${food}`,tag:'food',tagLabel:'COMIDA/NH₃'}]},
+        {day:14,label:'Día 14',name:'🧪 Tira semanal + cambio condicional',tasks:[
+          {id:'n14t1',icon:'🍖',text:`${food}`,tag:'food',tagLabel:'COMIDA/NH₃'},
+          {id:'n14t2',icon:'🧪',text:`Tira: NO₂, NO₃, pH, KH${hasNh3?', NH₃':''}`,tag:'test',tagLabel:'TIRA'},
+          {id:'n14t3',icon:'💧',text:`Si NO₃ > 40 ppm: cambio de agua 25% (${wc}). Si < 40: no tocar.`,tag:'water',tagLabel:'AGUA CONDICIONAL'},
+        ], note:{type:'info',label:'ESTADO ESPERADO DÍA 14',text:'Nitritos deben estar en movimiento (0.5-2 ppm). Nitratos empezando a aparecer (10-20 ppm). Si hay nitritos presentes y nitratos subiendo: ¡el ciclo está bien encaminado!'}},
+      ]
+    });
+    weeks.push({
+      weekNum:3, title:'Semana 3 — Pico de nitritos', subtitle:'Días 15-21 · Nitritos en máximo, pronto empezarán a bajar',
+      color:'#ffd166', badge:'PICO', days:[
+        {day:15,label:'Día 15',name:'Comida',tasks:[
+          {id:'n15t1',icon:'🍖',text:`${food}`,tag:'food',tagLabel:'COMIDA/NH₃'},
+          {id:'n15t2',icon:'👀',text:'Agua puede verse ligeramente amarillenta: acumulación de nitratos, normal',tag:'watch',tagLabel:'OBSERVAR'},
+        ]},
+        {day:17,label:'Día 17',name:'🧪 Tira de evaluación',tasks:[
+          {id:'n17t1',icon:'🍖',text:`${food}`,tag:'food',tagLabel:'COMIDA/NH₃'},
+          {id:'n17t2',icon:'🧪',text:`Tira: NO₂, NO₃, pH${hasNh3?', NH₃':''}. ¿Nitritos siguen subiendo o empezaron a bajar?`,tag:'test',tagLabel:'TIRA'},
+          {id:'n17t3',icon:'📝',text:'Registrar y comparar con semana anterior.',tag:'watch',tagLabel:'REGISTRAR'},
+        ], note:{type:'info',label:'EVALUACIÓN SEMANA 3',text:'Si nitritos siguen subiendo: ciclo en pleno pico, continúa. Si ya empezaron a bajar con nitratos subiendo: ¡señal excelente! La fase final está iniciando. Si nitritos llevan más de 10 días en pico: cambio de agua 20%.'}},
+        {day:19,label:'Día 19',name:'Comida',tasks:[{id:'n19t1',icon:'🍖',text:`${food}`,tag:'food',tagLabel:'COMIDA/NH₃'}]},
+        {day:21,label:'Día 21',name:'🧪 Tira + cambio condicional',tasks:[
+          {id:'n21t1',icon:'🍖',text:`${food}`,tag:'food',tagLabel:'COMIDA/NH₃'},
+          {id:'n21t2',icon:'🧪',text:`Tira completa: NO₂, NO₃, pH, KH, GH${hasNh3?', NH₃':''}`,tag:'test',tagLabel:'TIRA'},
+          {id:'n21t3',icon:'💧',text:`Si NO₃ > 40: cambio de agua 25% (${wc})`,tag:'water',tagLabel:'AGUA CONDICIONAL'},
+        ]},
+      ]
+    });
+    weeks.push({
+      weekNum:4, title:'Semana 4 — Recta final', subtitle:'Días 22-28 · Nitritos bajando a 0',
+      color:'#00e08a', badge:'FINAL', days:[
+        {day:22,label:'Día 22',name:'Comida + observación',tasks:[
+          {id:'n22t1',icon:'🍖',text:`${food}`,tag:'food',tagLabel:'COMIDA/NH₃'},
+          {id:'n22t2',icon:'👀',text:'Agua debe verse más clara. Flujo del filtro estable.',tag:'watch',tagLabel:'OBSERVAR'},
+        ]},
+        {day:24,label:'Día 24',name:'🧪 Tira de evaluación final',tasks:[
+          {id:'n24t1',icon:'🍖',text:`${food}`,tag:'food',tagLabel:'COMIDA/NH₃'},
+          {id:'n24t2',icon:'🧪',text:`Tira: NO₂ debe estar bajando (menos de 0.5 idealmente)${hasNh3?'. NH₃ debe acercarse a 0':''}. NO₃ presente.`,tag:'test',tagLabel:'TIRA CRÍTICA'},
+          {id:'n24t3',icon:'📝',text:'Si NO₂ = 0: espera 2-3 días y confirma con otra tira.',tag:'watch',tagLabel:'REGISTRAR'},
+        ], note:{type:'good',label:'🎯 META CERCANA',text:'Si el día 24 los nitritos bajaron a 0 o muy cerca: ¡casi listo! Haz una prueba confirmatoria en 48h. Si aún están en 1-2: continúa, puede tardar unos días más.'}},
+        {day:26,label:'Día 26',name:'Comida',tasks:[{id:'n26t1',icon:'🍖',text:`${food}`,tag:'food',tagLabel:'COMIDA/NH₃'}]},
+        {day:28,label:'Día 28',name:'🧪 TIRA CONFIRMATORIA FINAL + 💧 Cambio pre-peces',tasks:[
+          {id:'n28t1',icon:'🧪',text:`Tira confirmatoria: NO₂ = 0, NO₃ presente (5-40 ppm), pH 6.8-7.5${hasNh3?', NH₃ = 0':''}`,tag:'test',tagLabel:'TIRA FINAL'},
+          {id:'n28t2',icon:'💧',text:`Cambio de agua 25% (${wc}) con declorinador. Agua misma temperatura.`,tag:'water',tagLabel:'CAMBIO PRE-PECES'},
+          {id:'n28t3',icon:'⏳',text:'Esperar 24-48h antes de introducir peces',tag:'watch',tagLabel:'ESPERAR'},
+          {id:'n28t4',icon:'🐟',text:'Si todos los criterios se cumplen: ¡peces listos para entrar!',tag:'done',tagLabel:'LISTO'},
+        ], note:{type:'good',label:'✅ CRITERIOS DE CICLADO COMPLETO',text:`NO₂ = 0 en dos lecturas separadas. NO₃ presente y estable. pH 6.8-7.5. Agua clara. Haz cambio 25%, espera 24h. Aclimata los peces flotando la bolsa 15 min, agrega agua de la pecera poco a poco durante 30 min.`}},
+      ]
+    });
+    weeks.push({
+      weekNum:5, title:'Semana 5+ — Extensión si es necesario', subtitle:'Para ciclos que tarden más de 28 días (completamente normal)',
+      color:'#a78bfa', badge:'EXTENSIÓN', days:[
+        {day:29,label:'Día 29+',name:'Si nitritos aún no llegaron a 0',tasks:[
+          {id:'e29t1',icon:'🍖',text:`${food} — continuar sin cambios`,tag:'food',tagLabel:'COMIDA/NH₃'},
+          {id:'e29t2',icon:'🧪',text:'Tira cada 3 días para monitorear bajada de nitritos',tag:'test',tagLabel:'TIRA'},
+          {id:'e29t3',icon:'💧',text:`Cambio 20% solo si NO₃ > 80 ppm`,tag:'water',tagLabel:'AGUA CONDICIONAL'},
+        ], note:{type:'warn',label:'COMPLETAMENTE NORMAL',text:'Los ciclos naturales pueden tardar entre 4-6 semanas dependiendo del agua local, temperatura y pH. El ciclo SIEMPRE termina si se mantienen las condiciones correctas. Paciencia.'}},
+        {day:35,label:'Día 35',name:'🏆 Verificación y cierre del ciclado',tasks:[
+          {id:'e35t1',icon:'🧪',text:`Tira confirmatoria final: NO₂ = 0, NO₃ presente${hasNh3?', NH₃ = 0':''}, pH y KH estables`,tag:'test',tagLabel:'TIRA FINAL'},
+          {id:'e35t2',icon:'💧',text:`Cambio 25% (${wc}) con declorinador. Esperar 24h.`,tag:'water',tagLabel:'CAMBIO FINAL'},
+          {id:'e35t3',icon:'🐟',text:'¡Listo para ir a buscar tus peces!',tag:'done',tagLabel:'PECES'},
+        ], note:{type:'good',label:'🎉 ¡ENHORABUENA!',text:'Cuando el ciclo esté completo introduce los peces con aclimatación gradual. Empieza con pocos peces y espera 2-3 semanas antes de añadir más para que las bacterias se ajusten a la nueva carga biológica.'}},
+      ]
+    });
+  }
+
+  return weeks;
+}
+
+// ─── STATE ───
+let state = {};
+let comments = [];
+let currentPlan = [];
+
+function loadState(cfg) {
+  const key = `aqua_${cfg.size}_${cfg.method}_${cfg.strips}`;
+  state = JSON.parse(localStorage.getItem(key + '_state') || '{}');
+  comments = JSON.parse(localStorage.getItem(key + '_comments') || '[]');
+}
+function saveState() {
+  const key = `aqua_${CFG.size}_${CFG.method}_${CFG.strips}`;
+  localStorage.setItem(key + '_state', JSON.stringify(state));
+}
+function saveComments() {
+  const key = `aqua_${CFG.size}_${CFG.method}_${CFG.strips}`;
+  localStorage.setItem(key + '_comments', JSON.stringify(comments));
+}
+
+// ─── APP START ───
+function startApp() {
+  if (!CFG.size || !CFG.method || !CFG.strips) return;
+  loadState(CFG);
+  currentPlan = buildPlan(CFG);
+  document.getElementById('setupScreen').style.display = 'none';
+  document.getElementById('app').style.display = 'block';
+  renderConfigPills();
+  renderPlan();
+  populateDaySelects();
+  renderComments();
+  if (CFG.method === 'con') document.getElementById('legBact').style.display = 'flex';
+  if (CFG.strips !== 'completo') document.getElementById('sNh3Wrap').style.display = 'none';
+  const dur = getDuration(CFG.method);
+  document.getElementById('dash-sub').textContent = `${CFG.size}L · ${CFG.method === 'con' ? 'Con bacterias' : 'Sin bacterias'} · ${CFG.strips === '7en1' ? 'Tiras 7-en-1' : 'Tiras con NH₃'} · ${dur}`;
+}
+
+function resetApp() {
+  if (!confirm('¿Quieres cambiar la configuración? Tu progreso guardado en esta configuración se mantendrá.')) return;
+  document.getElementById('setupScreen').style.display = 'flex';
+  document.getElementById('app').style.display = 'none';
+  CFG = { size: null, method: null, strips: null };
+  document.querySelectorAll('.opt-btn, .method-card, .strip-opt').forEach(b => b.classList.remove('selected'));
+  document.getElementById('btnStart').disabled = true;
+}
+
+function renderConfigPills() {
+  const sizeLabels = { 20: '20L Nano', 40: '40L Pequeño', 80: '80L Mediano', 100: '100L Grande' };
+  document.getElementById('configPills').innerHTML = `
+    <span class="cpill cpill-blue">${sizeLabels[CFG.size]}</span>
+    <span class="cpill cpill-green">${CFG.method === 'con' ? '⚡ Con bacterias' : '⏳ Sin bacterias'}</span>
+    <span class="cpill cpill-orange">${CFG.strips === '7en1' ? '🧪 Tiras 7-en-1' : '🔬 Tiras + NH₃'}</span>
+  `;
+}
+
+// ─── RENDER PLAN ───
+function tagClass(t) {
+  return { food:'tt-food', test:'tt-test', water:'tt-water', watch:'tt-watch', bact:'tt-bact', setup:'tt-setup', crit:'tt-crit', done:'tt-done' }[t] || 'tt-watch';
+}
+
+function renderPlan() {
+  const phases = CFG.method === 'con'
+    ? ['DÍA 0\nSetup','SEM 1\nBacterias','SEM 2\nPico','SEM 3\nFinal','✅\n¡Listo!']
+    : ['DÍA 0\nSetup','SEM 1\nInicio','SEM 2\nNO₂↑','SEM 3\nPico','SEM 4\nFinal','✅\n¡Listo!'];
+
+  const phRow = document.getElementById('phaseRow');
+  phRow.innerHTML = phases.map((p,i) => `<div class="pm" id="pm${i}">${p.replace('\n','<br>')}</div>`).join('');
+
+  const container = document.getElementById('weeksContainer');
+  container.innerHTML = '';
+
+  currentPlan.forEach((week, wi) => {
+    let total = 0, done = 0;
+    week.days.forEach(d => d.tasks.forEach(t => { total++; if(state[t.id]) done++; }));
+    const pct = total > 0 ? Math.round(done/total*100) : 0;
+    const allDone = total > 0 && done === total;
+
+    const wDiv = document.createElement('div');
+    wDiv.className = 'week-wrap' + (wi === 0 ? ' open' : '');
+    wDiv.id = 'ww_' + wi;
+    wDiv.innerHTML = `
+      <div class="week-hdr" onclick="toggleWeek(${wi})">
+        <div class="wk-num">SEM ${wi}</div>
+        <div class="wk-title" style="color:${week.color}">${week.title}</div>
+        <div class="wk-badge" style="border-color:${week.color};color:${week.color};background:${week.color}18;">${allDone ? '✅ DONE' : week.badge}</div>
+        <div class="wk-mini">
+          <div class="wk-bar"><div class="wk-bar-fill" id="wb_${wi}" style="width:${pct}%;background:${week.color};"></div></div>
+          <span id="wc_${wi}">${done}/${total}</span>
+        </div>
+        <div class="wk-chev">▼</div>
+      </div>
+      <div class="week-body" id="wbody_${wi}" style="${wi===0?'display:block':''}">
+        <div class="week-sub">${week.subtitle}</div>
+        <div id="wdays_${wi}"></div>
+      </div>
+    `;
+    container.appendChild(wDiv);
+    if (wi === 0) wDiv.querySelector('.week-body').style.display = 'block';
+
+    const daysEl = wDiv.querySelector(`#wdays_${wi}`);
+    week.days.forEach(day => {
+      const allDayDone = day.tasks.every(t => state[t.id]);
+      const dDiv = document.createElement('div');
+      dDiv.className = 'day-card' + (allDayDone ? ' done' : '');
+      dDiv.id = 'dc_' + day.day;
+
+      const tasks = day.tasks.map(t => `
+        <div class="task${state[t.id] ? ' done-task' : ''}" onclick="toggleTask('${t.id}',${wi})" id="tk_${t.id}">
+          <div class="chk">${state[t.id] ? '✓' : ''}</div>
+          <div class="t-icon">${t.icon}</div>
+          <div class="task-content">
+            <div class="task-txt">${t.text} <span class="ttag ${tagClass(t.tag)}">${t.tagLabel}</span></div>
+          </div>
+        </div>
+      `).join('');
+
+      let noteHtml = '';
+      if (day.note) {
+        noteHtml = `<div class="note note-${day.note.type}"><span class="note-lbl">${day.note.label}</span>${day.note.text}</div>`;
+      }
+
+      dDiv.innerHTML = `
+        <div class="day-hdr">
+          <div class="day-num">${day.label}<small>DÍA ${day.day}</small></div>
+          <div class="day-name">${day.name}</div>
+          <div class="done-tag">✅ Completo</div>
+        </div>
+        <div class="task-list">${tasks}</div>
+        ${noteHtml}
+      `;
+      daysEl.appendChild(dDiv);
+    });
+  });
+  updateProgress();
+}
+
+function toggleWeek(wi) {
+  const w = document.getElementById('ww_' + wi);
+  const b = document.getElementById('wbody_' + wi);
+  const open = w.classList.toggle('open');
+  b.style.display = open ? 'block' : 'none';
+}
+
+function toggleTask(id, wi) {
+  state[id] = !state[id];
+  saveState();
+  const el = document.getElementById('tk_' + id);
+  if (el) { el.classList.toggle('done-task', state[id]); el.querySelector('.chk').textContent = state[id] ? '✓' : ''; }
+  currentPlan.forEach(week => week.days.forEach(day => {
+    if (day.tasks.some(t => t.id === id)) {
+      const allDone = day.tasks.every(t => state[t.id]);
+      const dc = document.getElementById('dc_' + day.day);
+      if (dc) dc.classList.toggle('done', allDone);
+    }
+  }));
+  updateWeekBar(wi);
+  updateProgress();
+}
+
+function updateWeekBar(wi) {
+  const week = currentPlan[wi];
+  if (!week) return;
+  let total = 0, done = 0;
+  week.days.forEach(d => d.tasks.forEach(t => { total++; if(state[t.id]) done++; }));
+  const pct = total > 0 ? Math.round(done/total*100) : 0;
+  const allDone = total > 0 && done === total;
+  const wb = document.getElementById('wb_' + wi);
+  const wc = document.getElementById('wc_' + wi);
+  const badge = document.querySelector(`#ww_${wi} .wk-badge`);
+  if (wb) wb.style.width = pct + '%';
+  if (wc) wc.textContent = done + '/' + total;
+  if (badge) badge.textContent = allDone ? '✅ DONE' : currentPlan[wi].badge;
+}
+
+function updateProgress() {
+  let total = 0, done = 0, daysDone = 0;
+  currentPlan.forEach(week => week.days.forEach(day => {
+    const allDone = day.tasks.every(t => state[t.id]);
+    if (allDone && day.tasks.length > 0) daysDone++;
+    day.tasks.forEach(t => { total++; if(state[t.id]) done++; });
+  }));
+  const pct = total > 0 ? Math.round(done/total*100) : 0;
+  document.getElementById('s-done').textContent = done;
+  document.getElementById('s-days').textContent = daysDone;
+  document.getElementById('s-pct').textContent = pct + '%';
+  document.getElementById('bigPct').textContent = pct + '%';
+  document.getElementById('trackFill').style.width = pct + '%';
+  const phases = document.querySelectorAll('.pm');
+  const total_phases = phases.length;
+  phases.forEach((p, i) => {
+    const threshold = Math.round(i / (total_phases - 1) * 100);
+    p.classList.toggle('lit', pct >= threshold);
+  });
+}
+
+// ─── TABS ───
+function openTab(t) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('panel-' + t).classList.add('active');
+  document.getElementById('tab-' + t).classList.add('active');
+}
+
+// ─── COMMENTS ───
+function populateDaySelects() {
+  const opts = ['<option value="">-- Seleccionar día --</option>'];
+  currentPlan.forEach(week => week.days.forEach(day => {
+    opts.push(`<option value="Día ${day.day}">Día ${day.day} — ${day.name.replace(/[🧪💧🏆]/g,'').trim()}</option>`);
+  }));
+  ['cDay','sDay'].forEach(id => { const el = document.getElementById(id); if(el) el.innerHTML = opts.join(''); });
+}
+
+function addComment() {
+  const day = document.getElementById('cDay').value;
+  const type = document.getElementById('cType').value;
+  const text = document.getElementById('cText').value.trim();
+  if (!text) { alert('Escribe algo antes de guardar.'); return; }
+  comments.unshift({ id: Date.now(), day: day || 'General', type, text, date: new Date().toLocaleDateString('es-MX', {day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'}) });
+  saveComments();
+  document.getElementById('cText').value = '';
+  renderComments();
+}
+
+function logStrip() {
+  const no2 = document.getElementById('sNo2').value;
+  const no3 = document.getElementById('sNo3').value;
+  const nh3 = CFG.strips === 'completo' ? document.getElementById('sNh3').value : '';
+  const ph = document.getElementById('sPh').value;
+  const kh = document.getElementById('sKh').value;
+  const day = document.getElementById('sDay').value;
+  if (!no2 && !no3 && !ph && !nh3) { alert('Selecciona al menos un valor.'); return; }
+  const parts = [];
+  if (nh3) parts.push(`NH₃: ${nh3} ppm`);
+  if (no2) parts.push(`NO₂: ${no2} ppm`);
+  if (no3) parts.push(`NO₃: ${no3} ppm`);
+  if (ph) parts.push(`pH: ${ph}`);
+  if (kh) parts.push(`KH: ${kh}`);
+  let text = '📊 Tira — ' + parts.join(' | ');
+  if (no2 === '0' && no3 && no3 !== '0' && (!nh3 || nh3 === '0')) text += ' ✅ ¡Posible ciclado completo!';
+  else if (no2 === '5' || no2 === '10+') text += ' ⚠️ Nitritos en pico alto. Normal en semanas 2-3.';
+  else if (no2 === '0' && no3 === '0') text += ' ℹ️ Todo en 0. Fase inicial del ciclado.';
+  comments.unshift({ id: Date.now(), day: day || 'General', type: 'test', text, date: new Date().toLocaleDateString('es-MX', {day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'}) });
+  saveComments();
+  renderComments();
+}
+
+function deleteComment(id) {
+  comments = comments.filter(c => c.id !== id);
+  saveComments();
+  renderComments();
+}
+
+function renderComments() {
+  const list = document.getElementById('cList');
+  const empty = document.getElementById('emptyState');
+  const badge = document.getElementById('cbadge');
+  if (comments.length === 0) { empty.style.display = 'block'; list.innerHTML = ''; badge.style.display = 'none'; return; }
+  empty.style.display = 'none';
+  badge.style.display = 'inline';
+  badge.textContent = comments.length;
+  const labels = { normal:'NOTA', test:'TIRA', cambio:'CAMBIO', alerta:'ALERTA', bien:'BIEN' };
+  list.innerHTML = comments.map(c => `
+    <div class="c-entry c-${c.type}">
+      <div class="c-meta">
+        <span class="c-date">📅 ${c.date}</span>
+        <span class="c-type-badge">${labels[c.type]||c.type}</span>
+        <span class="c-dayref">${c.day}</span>
+      </div>
+      <div class="c-text">${c.text}</div>
+      <button class="c-del" onclick="deleteComment(${c.id})">✕</button>
+    </div>
+  `).join('');
+}
+
+// ─── INIT ───
+buildBubbles();
+</script>
+</body>
+</html>
