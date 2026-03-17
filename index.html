@@ -1,0 +1,2801 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ciclado Acuario | Pecera Betta 16-17L</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0f1a;
+    --surface: #111827;
+    --surface2: #1a2235;
+    --surface3: #1f2d42;
+    --border: #2a3a54;
+    --text: #e8f0fe;
+    --text-muted: #7a90b0;
+    --text-dim: #4a6080;
+
+    --ammonia: #f97316;
+    --nitrite: #ef4444;
+    --nitrate: #22c55e;
+    --water: #38bdf8;
+    --food: #a78bfa;
+    --test: #fb923c;
+    --done: #10b981;
+    --warn: #fbbf24;
+
+    --accent: #38bdf8;
+    --accent2: #818cf8;
+    --glow: rgba(56,189,248,0.15);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Background grid effect */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(56,189,248,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(56,189,248,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* Animated water bubbles */
+  .bubbles {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 0;
+    overflow: hidden;
+  }
+  .bubble {
+    position: absolute;
+    bottom: -20px;
+    width: 8px;
+    height: 8px;
+    background: radial-gradient(circle at 30% 30%, rgba(56,189,248,0.4), rgba(56,189,248,0.1));
+    border: 1px solid rgba(56,189,248,0.3);
+    border-radius: 50%;
+    animation: rise linear infinite;
+  }
+  @keyframes rise {
+    0% { transform: translateY(0) translateX(0); opacity: 0.6; }
+    50% { transform: translateY(-40vh) translateX(15px); opacity: 0.3; }
+    100% { transform: translateY(-100vh) translateX(-10px); opacity: 0; }
+  }
+
+  /* HEADER */
+  header {
+    position: relative;
+    z-index: 10;
+    padding: 28px 32px 0;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 0;
+  }
+
+  .logo {
+    width: 48px;
+    height: 48px;
+    background: linear-gradient(135deg, #38bdf8, #818cf8);
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    flex-shrink: 0;
+    box-shadow: 0 0 20px rgba(56,189,248,0.3);
+  }
+
+  .header-text h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: 22px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    background: linear-gradient(90deg, #e8f0fe, #38bdf8);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .header-text p {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--text-muted);
+    letter-spacing: 1px;
+    margin-top: 2px;
+  }
+
+  .header-badges {
+    margin-left: auto;
+    display: flex;
+    gap: 8px;
+  }
+
+  .badge {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    padding: 4px 10px;
+    border-radius: 20px;
+    border: 1px solid;
+    letter-spacing: 0.5px;
+  }
+
+  .badge-blue { border-color: var(--water); color: var(--water); background: rgba(56,189,248,0.08); }
+  .badge-purple { border-color: var(--food); color: var(--food); background: rgba(167,139,250,0.08); }
+
+  /* TABS */
+  .tabs-bar {
+    position: relative;
+    z-index: 10;
+    display: flex;
+    gap: 0;
+    padding: 0 32px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .tab-btn {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    padding: 16px 22px;
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    position: relative;
+    transition: color 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    letter-spacing: 0.3px;
+  }
+
+  .tab-btn:hover { color: var(--text); }
+
+  .tab-btn.active {
+    color: var(--accent);
+    font-weight: 600;
+  }
+
+  .tab-btn.active::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    border-radius: 2px 2px 0 0;
+  }
+
+  .tab-icon { font-size: 15px; }
+
+  /* MAIN CONTENT */
+  main {
+    position: relative;
+    z-index: 10;
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 28px 24px 60px;
+  }
+
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  /* PROGRESS SECTION */
+  .progress-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 24px;
+    gap: 20px;
+    flex-wrap: wrap;
+  }
+
+  .progress-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 28px;
+    font-weight: 800;
+    line-height: 1.1;
+  }
+
+  .progress-title span {
+    display: block;
+    font-size: 13px;
+    font-weight: 400;
+    font-family: 'DM Sans', sans-serif;
+    color: var(--text-muted);
+    margin-top: 4px;
+    letter-spacing: 0;
+  }
+
+  .stats-row {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .stat-pill {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 10px 16px;
+    text-align: center;
+    min-width: 90px;
+  }
+
+  .stat-pill .val {
+    font-family: 'Syne', sans-serif;
+    font-size: 22px;
+    font-weight: 700;
+    line-height: 1;
+  }
+
+  .stat-pill .lbl {
+    font-size: 10px;
+    color: var(--text-muted);
+    margin-top: 3px;
+    letter-spacing: 0.5px;
+    font-family: 'DM Mono', monospace;
+  }
+
+  /* BIG PROGRESS BAR */
+  .progress-bar-section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 24px 28px;
+    margin-bottom: 28px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .progress-bar-section::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--accent), var(--accent2), var(--food));
+  }
+
+  .pb-label-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 14px;
+  }
+
+  .pb-label {
+    font-family: 'Syne', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+  }
+
+  .pb-pct {
+    font-family: 'DM Mono', monospace;
+    font-size: 28px;
+    font-weight: 500;
+    color: var(--accent);
+  }
+
+  .progress-track {
+    height: 20px;
+    background: var(--surface3);
+    border-radius: 10px;
+    overflow: hidden;
+    position: relative;
+  }
+
+  .progress-fill {
+    height: 100%;
+    border-radius: 10px;
+    background: linear-gradient(90deg, #38bdf8, #818cf8, #10b981);
+    transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    min-width: 4px;
+  }
+
+  .progress-fill::after {
+    content: '';
+    position: absolute;
+    top: 2px;
+    left: 4px;
+    right: 4px;
+    height: 4px;
+    background: rgba(255,255,255,0.3);
+    border-radius: 3px;
+  }
+
+  /* Phase markers */
+  .phase-markers {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 10px;
+    padding: 0 2px;
+  }
+
+  .phase-marker {
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    color: var(--text-dim);
+    text-align: center;
+  }
+
+  .phase-marker.active-phase { color: var(--accent); font-weight: 500; }
+
+  /* WEEK SECTIONS */
+  .week-section {
+    margin-bottom: 20px;
+    border-radius: 16px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    background: var(--surface);
+  }
+
+  .week-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 16px 20px;
+    cursor: pointer;
+    user-select: none;
+    transition: background 0.15s;
+    background: var(--surface2);
+  }
+
+  .week-header:hover { background: var(--surface3); }
+
+  .week-num {
+    font-family: 'Syne', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+  }
+
+  .week-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    flex: 1;
+  }
+
+  .week-badge {
+    font-size: 10px;
+    font-family: 'DM Mono', monospace;
+    padding: 3px 10px;
+    border-radius: 20px;
+    border: 1px solid;
+  }
+
+  .week-progress-mini {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--text-muted);
+  }
+
+  .week-progress-bar {
+    width: 60px;
+    height: 4px;
+    background: var(--surface3);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+
+  .week-progress-fill {
+    height: 100%;
+    background: var(--accent);
+    border-radius: 2px;
+    transition: width 0.3s;
+  }
+
+  .week-chevron {
+    color: var(--text-dim);
+    transition: transform 0.25s;
+    font-size: 12px;
+  }
+
+  .week-section.open .week-chevron { transform: rotate(180deg); }
+
+  .week-body {
+    display: none;
+    padding: 0 20px 20px;
+  }
+
+  .week-section.open .week-body { display: block; }
+
+  /* DAY CARDS */
+  .day-card {
+    margin-top: 14px;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    overflow: hidden;
+    background: var(--bg);
+    transition: border-color 0.2s;
+  }
+
+  .day-card.all-done {
+    border-color: rgba(16,185,129,0.4);
+    background: rgba(16,185,129,0.03);
+  }
+
+  .day-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    background: rgba(255,255,255,0.02);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .day-num {
+    font-family: 'Syne', sans-serif;
+    font-size: 20px;
+    font-weight: 800;
+    color: var(--accent);
+    min-width: 52px;
+    line-height: 1;
+  }
+
+  .day-num small {
+    display: block;
+    font-size: 9px;
+    font-weight: 400;
+    color: var(--text-muted);
+    font-family: 'DM Mono', monospace;
+    letter-spacing: 1px;
+  }
+
+  .day-name {
+    font-weight: 600;
+    font-size: 14px;
+    flex: 1;
+  }
+
+  .day-name .day-week { color: var(--text-muted); font-weight: 400; font-size: 12px; }
+
+  .day-done-badge {
+    display: none;
+    font-size: 11px;
+    font-family: 'DM Mono', monospace;
+    color: var(--done);
+    background: rgba(16,185,129,0.1);
+    border: 1px solid rgba(16,185,129,0.3);
+    padding: 3px 10px;
+    border-radius: 20px;
+  }
+
+  .day-card.all-done .day-done-badge { display: block; }
+
+  /* TASKS */
+  .task-list { padding: 10px 16px 12px; display: flex; flex-direction: column; gap: 8px; }
+
+  .task-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 10px 12px;
+    border-radius: 9px;
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s;
+    user-select: none;
+  }
+
+  .task-item:hover { background: rgba(255,255,255,0.04); }
+
+  .task-item.completed {
+    opacity: 0.55;
+  }
+
+  .task-item.completed .task-text {
+    text-decoration: line-through;
+    color: var(--text-muted);
+  }
+
+  .task-check {
+    width: 20px;
+    height: 20px;
+    border-radius: 6px;
+    border: 2px solid var(--border);
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s;
+    margin-top: 1px;
+    font-size: 11px;
+  }
+
+  .task-item.completed .task-check {
+    background: var(--done);
+    border-color: var(--done);
+    color: white;
+  }
+
+  .task-icon {
+    font-size: 15px;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  .task-content { flex: 1; }
+
+  .task-text {
+    font-size: 13px;
+    line-height: 1.5;
+    color: var(--text);
+  }
+
+  .task-sub {
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-top: 3px;
+    font-family: 'DM Mono', monospace;
+  }
+
+  .task-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 9px;
+    font-family: 'DM Mono', monospace;
+    padding: 2px 7px;
+    border-radius: 10px;
+    border: 1px solid;
+    margin-left: 8px;
+    vertical-align: middle;
+    letter-spacing: 0.5px;
+    font-weight: 500;
+  }
+
+  .tag-food { border-color: var(--food); color: var(--food); background: rgba(167,139,250,0.1); }
+  .tag-test { border-color: var(--test); color: var(--test); background: rgba(251,146,60,0.1); }
+  .tag-water { border-color: var(--water); color: var(--water); background: rgba(56,189,248,0.1); }
+  .tag-watch { border-color: var(--warn); color: var(--warn); background: rgba(251,191,36,0.1); }
+  .tag-critical { border-color: var(--nitrite); color: var(--nitrite); background: rgba(239,68,68,0.1); }
+  .tag-done { border-color: var(--done); color: var(--done); background: rgba(16,185,129,0.1); }
+
+  /* NOTES */
+  .day-note {
+    margin: 0 16px 14px;
+    padding: 10px 14px;
+    border-radius: 9px;
+    border-left: 3px solid;
+    background: rgba(255,255,255,0.02);
+    font-size: 12px;
+    color: var(--text-muted);
+    line-height: 1.6;
+  }
+
+  .day-note.note-warn { border-color: var(--warn); background: rgba(251,191,36,0.05); }
+  .day-note.note-info { border-color: var(--accent); background: rgba(56,189,248,0.05); }
+  .day-note.note-critical { border-color: var(--nitrite); background: rgba(239,68,68,0.05); }
+  .day-note.note-good { border-color: var(--done); background: rgba(16,185,129,0.05); }
+
+  .note-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 1px;
+    margin-bottom: 4px;
+    display: block;
+  }
+
+  /* =============== LEGEND =============== */
+  .legend-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+
+  .legend-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px 16px;
+  }
+
+  .legend-dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    display: inline-block;
+    margin-right: 8px;
+  }
+
+  /* =============== INFO TAB =============== */
+  .info-section {
+    margin-bottom: 32px;
+  }
+
+  .info-section h2 {
+    font-family: 'Syne', sans-serif;
+    font-size: 20px;
+    font-weight: 800;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 14px;
+  }
+
+  .info-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 18px 20px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .info-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 4px; height: 100%;
+  }
+
+  .info-card.card-blue::before { background: var(--water); }
+  .info-card.card-red::before { background: var(--nitrite); }
+  .info-card.card-green::before { background: var(--nitrate); }
+  .info-card.card-orange::before { background: var(--ammonia); }
+  .info-card.card-purple::before { background: var(--food); }
+
+  .info-card h3 {
+    font-family: 'Syne', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    margin-bottom: 8px;
+  }
+
+  .info-card p {
+    font-size: 12.5px;
+    color: var(--text-muted);
+    line-height: 1.7;
+  }
+
+  .cycle-timeline {
+    display: flex;
+    gap: 0;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    overflow: hidden;
+    margin-bottom: 24px;
+  }
+
+  .cycle-phase {
+    flex: 1;
+    padding: 16px 14px;
+    text-align: center;
+    border-right: 1px solid var(--border);
+    position: relative;
+  }
+
+  .cycle-phase:last-child { border-right: none; }
+
+  .cycle-phase .phase-num {
+    font-family: 'Syne', sans-serif;
+    font-size: 22px;
+    font-weight: 800;
+    line-height: 1;
+  }
+
+  .cycle-phase .phase-label {
+    font-size: 10px;
+    color: var(--text-muted);
+    font-family: 'DM Mono', monospace;
+    margin-top: 3px;
+    letter-spacing: 0.5px;
+  }
+
+  .cycle-phase .phase-name {
+    font-size: 12px;
+    font-weight: 600;
+    margin-top: 8px;
+    margin-bottom: 6px;
+  }
+
+  .cycle-phase .phase-desc {
+    font-size: 11px;
+    color: var(--text-muted);
+    line-height: 1.5;
+  }
+
+  /* NITRITE SCALE */
+  .nitrite-scale {
+    display: flex;
+    border-radius: 10px;
+    overflow: hidden;
+    height: 36px;
+    margin: 12px 0;
+    border: 1px solid var(--border);
+  }
+
+  .scale-block {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    font-weight: 500;
+  }
+
+  /* =============== COMMENTS TAB =============== */
+  .comment-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 20px;
+    margin-bottom: 20px;
+  }
+
+  .comment-box h2 {
+    font-family: 'Syne', sans-serif;
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .comment-input-row {
+    display: flex;
+    gap: 12px;
+    align-items: flex-end;
+  }
+
+  .comment-fields { flex: 1; display: flex; flex-direction: column; gap: 10px; }
+
+  select, textarea, input[type="text"], input[type="date"] {
+    background: var(--surface3);
+    border: 1px solid var(--border);
+    color: var(--text);
+    border-radius: 9px;
+    padding: 10px 14px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    width: 100%;
+    outline: none;
+    transition: border-color 0.2s;
+    -webkit-appearance: none;
+  }
+
+  select:focus, textarea:focus, input:focus {
+    border-color: var(--accent);
+  }
+
+  textarea {
+    resize: vertical;
+    min-height: 80px;
+    line-height: 1.5;
+  }
+
+  .btn-primary {
+    background: linear-gradient(135deg, #38bdf8, #818cf8);
+    border: none;
+    color: white;
+    font-family: 'Syne', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    padding: 10px 22px;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: opacity 0.2s, transform 0.15s;
+    white-space: nowrap;
+    align-self: flex-end;
+  }
+
+  .btn-primary:hover { opacity: 0.9; transform: translateY(-1px); }
+  .btn-primary:active { transform: translateY(0); }
+
+  .btn-danger {
+    background: rgba(239,68,68,0.15);
+    border: 1px solid rgba(239,68,68,0.3);
+    color: #ef4444;
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    padding: 4px 10px;
+    border-radius: 7px;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .btn-danger:hover { background: rgba(239,68,68,0.25); }
+
+  /* Comments list */
+  .comments-list { display: flex; flex-direction: column; gap: 12px; }
+
+  .comment-entry {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px 16px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .comment-entry::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+  }
+
+  .comment-entry.type-normal::before { background: var(--accent); }
+  .comment-entry.type-test::before { background: var(--test); }
+  .comment-entry.type-cambio::before { background: var(--water); }
+  .comment-entry.type-alerta::before { background: var(--nitrite); }
+  .comment-entry.type-bien::before { background: var(--done); }
+
+  .comment-meta {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 8px;
+  }
+
+  .comment-date {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--text-muted);
+  }
+
+  .comment-type-badge {
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 1px;
+    padding: 2px 8px;
+    border-radius: 10px;
+    border: 1px solid;
+    text-transform: uppercase;
+  }
+
+  .type-normal .comment-type-badge { border-color: var(--accent); color: var(--accent); }
+  .type-test .comment-type-badge { border-color: var(--test); color: var(--test); }
+  .type-cambio .comment-type-badge { border-color: var(--water); color: var(--water); }
+  .type-alerta .comment-type-badge { border-color: var(--nitrite); color: var(--nitrite); }
+  .type-bien .comment-type-badge { border-color: var(--done); color: var(--done); }
+
+  .comment-day-ref {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--text-dim);
+    margin-left: auto;
+  }
+
+  .comment-text {
+    font-size: 13px;
+    line-height: 1.6;
+    color: var(--text);
+  }
+
+  .delete-btn-wrap {
+    position: absolute;
+    top: 10px;
+    right: 12px;
+  }
+
+  /* Empty state */
+  .empty-comments {
+    text-align: center;
+    padding: 48px 20px;
+    color: var(--text-dim);
+  }
+
+  .empty-comments .big-icon { font-size: 40px; margin-bottom: 12px; }
+  .empty-comments p { font-size: 13px; color: var(--text-muted); }
+
+  /* Responsive */
+  @media (max-width: 640px) {
+    header { padding: 18px 16px 0; flex-wrap: wrap; }
+    .header-badges { width: 100%; margin: 8px 0 0; }
+    .tabs-bar { padding: 0 8px; overflow-x: auto; }
+    main { padding: 20px 14px 60px; }
+    .progress-header { flex-direction: column; }
+    .cycle-timeline { flex-direction: column; }
+    .cycle-phase { border-right: none; border-bottom: 1px solid var(--border); }
+    .comment-input-row { flex-direction: column; }
+
+  }
+
+  /* Animations */
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .tab-panel.active { animation: fadeIn 0.25s ease; }
+
+  .week-section { animation: fadeIn 0.3s ease; }
+
+  .pulsing {
+    animation: pulse 2s ease-in-out infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(56,189,248,0.3); }
+    50% { box-shadow: 0 0 0 6px rgba(56,189,248,0); }
+  }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--text-dim); }
+
+  /* =============== LOGIN SCREEN =============== */
+  #loginScreen {
+    position: fixed;
+    inset: 0;
+    background: var(--bg);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 0;
+  }
+
+  #loginScreen::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(56,189,248,0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(56,189,248,0.04) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+  }
+
+  .login-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 24px;
+    padding: 48px 40px;
+    width: 100%;
+    max-width: 400px;
+    position: relative;
+    z-index: 1;
+    box-shadow: 0 0 60px rgba(56,189,248,0.08);
+    animation: fadeIn 0.4s ease;
+  }
+
+  .login-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, #38bdf8, #818cf8, #10b981);
+    border-radius: 24px 24px 0 0;
+  }
+
+  .login-fish {
+    font-size: 52px;
+    text-align: center;
+    display: block;
+    margin-bottom: 16px;
+    filter: drop-shadow(0 0 20px rgba(56,189,248,0.5));
+  }
+
+  .login-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 26px;
+    font-weight: 800;
+    text-align: center;
+    background: linear-gradient(90deg, #e8f0fe, #38bdf8);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 6px;
+  }
+
+  .login-sub {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--text-muted);
+    text-align: center;
+    letter-spacing: 1px;
+    margin-bottom: 32px;
+  }
+
+  .login-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--text-muted);
+    letter-spacing: 1px;
+    display: block;
+    margin-bottom: 8px;
+  }
+
+  .login-input {
+    width: 100%;
+    background: var(--surface3);
+    border: 1px solid var(--border);
+    color: var(--text);
+    border-radius: 12px;
+    padding: 14px 16px;
+    font-family: 'Syne', sans-serif;
+    font-size: 16px;
+    font-weight: 600;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    margin-bottom: 16px;
+  }
+
+  .login-input:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(56,189,248,0.1);
+  }
+
+  .login-input::placeholder {
+    font-weight: 400;
+    font-size: 14px;
+    color: var(--text-dim);
+  }
+
+  .btn-login {
+    width: 100%;
+    background: linear-gradient(135deg, #38bdf8, #818cf8);
+    border: none;
+    color: white;
+    font-family: 'Syne', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    padding: 14px;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: opacity 0.2s, transform 0.15s;
+    letter-spacing: 0.5px;
+  }
+
+  .btn-login:hover { opacity: 0.9; transform: translateY(-1px); }
+  .btn-login:active { transform: translateY(0); }
+
+  .login-users-title {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--text-dim);
+    letter-spacing: 1px;
+    margin: 20px 0 10px;
+    text-align: center;
+  }
+
+  .login-users-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: center;
+  }
+
+  .login-user-chip {
+    background: var(--surface3);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 6px 14px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all 0.15s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .login-user-chip:hover {
+    background: var(--surface2);
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  /* =============== USER BAR =============== */
+  .user-bar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-left: auto;
+  }
+
+  .user-pill {
+    background: var(--surface3);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 5px 14px 5px 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text);
+  }
+
+  .user-avatar {
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #38bdf8, #818cf8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 700;
+    color: white;
+    font-family: 'Syne', sans-serif;
+    flex-shrink: 0;
+  }
+
+  .btn-logout {
+    background: none;
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    padding: 5px 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    letter-spacing: 0.5px;
+    transition: all 0.15s;
+  }
+
+  .btn-logout:hover { border-color: var(--nitrite); color: var(--nitrite); }
+
+  /* =============== DIARY TAB =============== */
+  .diary-day-block {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    margin-bottom: 18px;
+    overflow: hidden;
+    animation: fadeIn 0.25s ease;
+  }
+
+  .diary-day-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 16px 20px;
+    background: var(--surface2);
+    border-bottom: 1px solid var(--border);
+    cursor: pointer;
+    user-select: none;
+    transition: background 0.15s;
+  }
+
+  .diary-day-header:hover { background: var(--surface3); }
+
+  .diary-day-num {
+    font-family: 'Syne', sans-serif;
+    font-size: 22px;
+    font-weight: 800;
+    color: var(--accent);
+    min-width: 54px;
+    line-height: 1;
+  }
+
+  .diary-day-num small {
+    display: block;
+    font-size: 9px;
+    font-weight: 400;
+    color: var(--text-muted);
+    font-family: 'DM Mono', monospace;
+    letter-spacing: 1px;
+  }
+
+  .diary-day-name { font-size: 14px; font-weight: 600; flex: 1; }
+
+  .diary-summary-pills {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+
+  .diary-pill {
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    padding: 3px 9px;
+    border-radius: 20px;
+    border: 1px solid;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+  }
+
+  .diary-pill-task { border-color: var(--done); color: var(--done); background: rgba(16,185,129,0.08); }
+  .diary-pill-strip { border-color: var(--test); color: var(--test); background: rgba(251,146,60,0.08); }
+  .diary-pill-note { border-color: var(--accent); color: var(--accent); background: rgba(56,189,248,0.08); }
+
+  .diary-day-body {
+    padding: 18px 20px;
+    display: none;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .diary-section-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 1.5px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+
+  .diary-task-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 13px;
+    color: var(--text-muted);
+    padding: 6px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.03);
+  }
+
+  .diary-task-check {
+    width: 18px;
+    height: 18px;
+    border-radius: 5px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    background: rgba(16,185,129,0.15);
+    border: 1px solid rgba(16,185,129,0.4);
+    color: var(--done);
+  }
+
+  .diary-task-check.pending {
+    background: var(--surface3);
+    border-color: var(--border);
+    color: transparent;
+  }
+
+  .diary-strip-card {
+    background: var(--surface3);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 14px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .diary-strip-val {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 60px;
+  }
+
+  .diary-strip-val .sv-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 1px;
+    color: var(--text-dim);
+    margin-bottom: 3px;
+  }
+
+  .diary-strip-val .sv-val {
+    font-family: 'Syne', sans-serif;
+    font-size: 18px;
+    font-weight: 700;
+    line-height: 1;
+  }
+
+  .diary-note-entry {
+    background: var(--surface3);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 11px 14px;
+    font-size: 13px;
+    color: var(--text);
+    line-height: 1.6;
+    position: relative;
+    padding-left: 20px;
+    border-left: 3px solid var(--accent);
+  }
+
+  .diary-note-entry.type-test { border-left-color: var(--test); }
+  .diary-note-entry.type-cambio { border-left-color: var(--water); }
+  .diary-note-entry.type-alerta { border-left-color: var(--nitrite); }
+  .diary-note-entry.type-bien { border-left-color: var(--done); }
+
+  .diary-note-meta {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--text-dim);
+    margin-bottom: 5px;
+  }
+
+  .diary-empty-day {
+    text-align: center;
+    padding: 28px 20px;
+    color: var(--text-dim);
+    font-size: 12px;
+    font-family: 'DM Mono', monospace;
+    letter-spacing: 0.5px;
+  }
+
+  .diary-filter-bar {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+
+  .diary-filter-btn {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    padding: 6px 14px;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all 0.15s;
+    letter-spacing: 0.5px;
+  }
+
+  .diary-filter-btn.active, .diary-filter-btn:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+    background: rgba(56,189,248,0.08);
+  }
+
+  .diary-chevron {
+    color: var(--text-dim);
+    transition: transform 0.25s;
+    font-size: 11px;
+    margin-left: 6px;
+  }
+
+  .diary-day-block.open .diary-day-body { display: flex; }
+  .diary-day-block:not(.open) .diary-day-body { display: none; }
+  .diary-day-block.open .diary-chevron { transform: rotate(180deg); }
+</style>
+</head>
+<body>
+
+<!-- ========== LOGIN SCREEN ========== -->
+<div id="loginScreen">
+  <div class="login-card">
+    <span class="login-fish">🐟</span>
+    <div class="login-title">Ciclado Betta</div>
+    <div class="login-sub">INGRESA TU NOMBRE PARA CONTINUAR</div>
+
+    <label class="login-label">TU NOMBRE</label>
+    <input class="login-input" id="loginInput" type="text" placeholder="ej. Yorchi, Betta Master..." maxlength="30" autocomplete="off" />
+    <button class="btn-login" onclick="doLogin()">🐠 Entrar al acuario</button>
+
+    <div id="savedUsersSection" style="display:none;">
+      <div class="login-users-title">— USUARIOS ANTERIORES —</div>
+      <div class="login-users-list" id="savedUsersList"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Animated bubbles -->
+<div class="bubbles" id="bubblesContainer"></div>
+
+<!-- HEADER -->
+<header>
+  <div class="logo">🐟</div>
+  <div class="header-text">
+    <h1>Ciclado Betta · 16-17 L netos</h1>
+    <p>PECERA BETTA · CICLADO SIN BACTERIAS · LOMAS PREMIUM FOOD</p>
+  </div>
+  <div class="header-badges">
+    <span class="badge badge-blue">~28 días</span>
+    <span class="badge badge-purple">Sin amoniaco</span>
+  </div>
+  <div class="user-bar">
+    <div class="user-pill">
+      <div class="user-avatar" id="userAvatar">?</div>
+      <span id="userNameDisplay">—</span>
+    </div>
+    <button class="btn-logout" onclick="doLogout()">salir</button>
+  </div>
+</header>
+
+<!-- TABS -->
+<nav class="tabs-bar">
+  <button class="tab-btn active" onclick="openTab('plan')" id="tab-plan">
+    <span class="tab-icon">📅</span> Plan de Ciclado
+  </button>
+  <button class="tab-btn" onclick="openTab('info')" id="tab-info">
+    <span class="tab-icon">🔬</span> Información
+  </button>
+  <button class="tab-btn" onclick="openTab('comments')" id="tab-comments">
+    <span class="tab-icon">💬</span> Mi Progreso
+    <span id="comment-count-badge" style="display:none; background:var(--accent); color:var(--bg); font-size:10px; font-family:'DM Mono',monospace; padding:1px 6px; border-radius:10px; margin-left:4px;" id="commentBadge"></span>
+  </button>
+  <button class="tab-btn" onclick="openTab('diary')" id="tab-diary">
+    <span class="tab-icon">📓</span> Diario
+    <span id="diary-count-badge" style="display:none; background:var(--food); color:var(--bg); font-size:10px; font-family:'DM Mono',monospace; padding:1px 6px; border-radius:10px; margin-left:4px;"></span>
+  </button>
+</nav>
+
+<main>
+
+<!-- ========== TAB: PLAN ========== -->
+<div class="tab-panel active" id="panel-plan">
+
+  <div class="progress-header">
+    <div class="progress-title">
+      Plan de Ciclado
+      <span>Fishless cycling · Lomas Betta Premium Food 20g · Tiras 7-en-1 sin amoniaco</span>
+    </div>
+    <div class="stats-row">
+      <div class="stat-pill">
+        <div class="val" id="stat-total" style="color:var(--accent)">0</div>
+        <div class="lbl">TAREAS HECHAS</div>
+      </div>
+      <div class="stat-pill">
+        <div class="val" id="stat-days" style="color:var(--food)">0</div>
+        <div class="lbl">DÍAS MARCADOS</div>
+      </div>
+      <div class="stat-pill">
+        <div class="val" id="stat-pct" style="color:var(--done)">0%</div>
+        <div class="lbl">COMPLETADO</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Big progress bar -->
+  <div class="progress-bar-section pulsing" id="progressSection">
+    <div class="pb-label-row">
+      <span class="pb-label">🌊 Progreso del Ciclado</span>
+      <span class="pb-pct" id="bigPct">0%</span>
+    </div>
+    <div class="progress-track">
+      <div class="progress-fill" id="mainProgressFill" style="width:0%"></div>
+    </div>
+    <div class="phase-markers">
+      <div class="phase-marker" id="pm0">DÍA 0<br>Armado</div>
+      <div class="phase-marker" id="pm1">SEM 1<br>Inicio</div>
+      <div class="phase-marker" id="pm2">SEM 2<br>Nitrito↑</div>
+      <div class="phase-marker" id="pm3">SEM 3<br>Pico</div>
+      <div class="phase-marker" id="pm4">SEM 4<br>Final</div>
+      <div class="phase-marker" id="pm5">✅ Listo<br>¡Betta!</div>
+    </div>
+  </div>
+
+  <!-- LEGEND ROW -->
+  <div class="legend-grid" style="margin-bottom:28px;">
+    <div class="legend-card">
+      <span class="legend-dot" style="background:var(--food)"></span>
+      <strong style="font-size:12px;">🍖 Comida (Amoniaco)</strong>
+      <p style="font-size:11px; color:var(--text-muted); margin-top:4px;">3 pellets Lomas Betta Premium Food diario como fuente de amoniaco orgánico</p>
+    </div>
+    <div class="legend-card">
+      <span class="legend-dot" style="background:var(--test)"></span>
+      <strong style="font-size:12px;">🧪 Prueba con tira</strong>
+      <p style="font-size:11px; color:var(--text-muted); margin-top:4px;">Tira 7-en-1. Enfocarse en Nitritos (NO₂) y Nitratos (NO₃). Ignorar amoniaco.</p>
+    </div>
+    <div class="legend-card">
+      <span class="legend-dot" style="background:var(--water)"></span>
+      <strong style="font-size:12px;">💧 Cambio de agua</strong>
+      <p style="font-size:11px; color:var(--text-muted); margin-top:4px;">25% con Clorkill. Agua reposada 24h o tratada. Misma temperatura.</p>
+    </div>
+    <div class="legend-card">
+      <span class="legend-dot" style="background:var(--warn)"></span>
+      <strong style="font-size:12px;">👀 Observar</strong>
+      <p style="font-size:11px; color:var(--text-muted); margin-top:4px;">Revisar la pecera visualmente, estado del agua, presencia de turbidez, etc.</p>
+    </div>
+  </div>
+
+  <!-- WEEKS -->
+  <div id="weeksContainer"></div>
+
+</div><!-- end plan panel -->
+
+<!-- ========== TAB: INFO ========== -->
+<div class="tab-panel" id="panel-info">
+
+  <div class="info-section">
+    <h2>🔁 ¿Qué es el Ciclo del Nitrógeno?</h2>
+    <div class="info-card card-blue" style="margin-bottom:16px;">
+      <p>El ciclado es el proceso de establecer colonias de bacterias beneficiosas (<em>Nitrosomonas</em> y <em>Nitrobacter</em>) en tu filtro y sustrato. Estas bacterias convierten el amoniaco tóxico (que genera la comida y los desechos) en nitritos, y luego en nitratos, mucho menos tóxicos. Sin este ciclo completado, el agua sería venenosa para tu betta.</p>
+    </div>
+
+    <div class="cycle-timeline">
+      <div class="cycle-phase">
+        <div class="phase-num" style="color:var(--food)">NH₃</div>
+        <div class="phase-label">AMONIACO</div>
+        <div class="phase-name">Fuente de energía</div>
+        <div class="phase-desc">Generado por la descomposición de la comida. Las bacterias Nitrosomonas lo consumen.</div>
+      </div>
+      <div class="cycle-phase" style="text-align:center; padding:12px 6px; font-size:20px; flex:0 0 30px;">→</div>
+      <div class="cycle-phase">
+        <div class="phase-num" style="color:var(--nitrite)">NO₂</div>
+        <div class="phase-label">NITRITOS</div>
+        <div class="phase-name">Indicador clave</div>
+        <div class="phase-desc">Producto de las Nitrosomonas. Primero sube (semana 1-2), luego baja a 0 al final.</div>
+      </div>
+      <div class="cycle-phase" style="text-align:center; padding:12px 6px; font-size:20px; flex:0 0 30px;">→</div>
+      <div class="cycle-phase">
+        <div class="phase-num" style="color:var(--nitrate)">NO₃</div>
+        <div class="phase-label">NITRATOS</div>
+        <div class="phase-name">Producto final</div>
+        <div class="phase-desc">Acumulación de nitratos indica que el ciclo progresa. Controlado con cambios de agua periódicos.</div>
+      </div>
+      <div class="cycle-phase" style="text-align:center; padding:12px 6px; font-size:20px; flex:0 0 30px;">→</div>
+      <div class="cycle-phase">
+        <div class="phase-num" style="color:var(--done)">✅</div>
+        <div class="phase-label">CICLADO</div>
+        <div class="phase-name">¡Listo para el betta!</div>
+        <div class="phase-desc">NO₂ = 0, NO₃ > 0 estable. Agua clara. El betta puede entrar.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="info-section">
+    <h2>🧪 Cómo leer tus tiras 7-en-1</h2>
+    <div class="info-grid">
+      <div class="info-card card-red">
+        <h3>🔴 Nitritos (NO₂) — Tu semáforo principal</h3>
+        <p>Este es el parámetro más importante para saber dónde estás en el ciclado. Al inicio estará en 0 o muy bajo. Subirá durante la semana 1-2 (eso es buena señal: las bacterias están trabajando). Llegará a un pico y luego bajará. Cuando llegue a 0 de nuevo con nitratos presentes = ¡ciclado completo!</p>
+        <div class="nitrite-scale">
+          <div class="scale-block" style="background:#1a3a1a; color:#4ade80;">0<br><span style="font-size:8px;">BIEN</span></div>
+          <div class="scale-block" style="background:#2a3a1a; color:#a3e635;">0.5<br><span style="font-size:8px;">INICIO</span></div>
+          <div class="scale-block" style="background:#3a3a1a; color:#facc15;">1<br><span style="font-size:8px;">SUBIENDO</span></div>
+          <div class="scale-block" style="background:#3a2a1a; color:#fb923c;">2<br><span style="font-size:8px;">PICO</span></div>
+          <div class="scale-block" style="background:#3a1a1a; color:#f87171;">5+<br><span style="font-size:8px;">ALTO</span></div>
+        </div>
+      </div>
+      <div class="info-card card-green">
+        <h3>🟢 Nitratos (NO₃) — Confirmación</h3>
+        <p>Los nitratos empezarán a acumularse a medida que las bacterias Nitrobacter colonizan el filtro. Ver nitratos subiendo junto con nitritos bajando es la señal de que el ciclo avanza bien. Al finalizar deberían estar entre 5-20 ppm. Si suben muy alto (>40), haz un cambio de agua del 25%.</p>
+      </div>
+      <div class="info-card card-orange">
+        <h3>🟠 Amoniaco — No medible con tus tiras</h3>
+        <p>Tus tiras 7-en-1 no miden amoniaco directamente. No te preocupes: la comida Lomas produce amoniaco orgánico de forma continua y suficiente. Tu indicador indirecto es que los nitritos están subiendo. Si los nitritos no suben después de 10 días, agregar una pellet extra puede ayudar.</p>
+      </div>
+      <div class="info-card card-blue">
+        <h3>🔵 pH — Mantenerlo estable</h3>
+        <p>El pH ideal para el betta y el ciclado es 6.8 - 7.5. En CDMX el agua de llave suele estar en ese rango. Si tu tira muestra muy ácido (menor a 6.5) el ciclado puede detenerse, ya que las bacterias nitrificantes no trabajan bien. Monitorea cada semana.</p>
+      </div>
+      <div class="info-card card-purple">
+        <h3>🟣 KH y GH — Dureza del agua</h3>
+        <p>El KH (dureza de carbonatos) actúa como buffer del pH. Si es muy bajo (&lt;3°), el pH puede caer durante el ciclado y parar el proceso. El agua de CDMX generalmente tiene KH medio-alto, por lo que no suele ser problema. Monitorea con tus tiras cada semana.</p>
+      </div>
+      <div class="info-card card-blue">
+        <h3>💡 Turbidez del agua</h3>
+        <p>Una turbidez blanca-lechosa en semana 1-2 es normal: es una explosión de bacterias heterótrofas (no las que queremos, pero parte del proceso). El agua debe aclararse sola hacia la semana 2-3. Si sigue turbia más allá de la semana 3, puedes hacer un cambio de agua del 20%.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="info-section">
+    <h2>🍖 Lomas Betta Premium Food como fuente de amoniaco</h2>
+    <div class="info-card card-purple">
+      <p>La comida de betta se descompone y libera amoniaco orgánico de forma gradual y controlada, ideal para el ciclado fishless. <strong>3 pellets diarios</strong> en una pecera de 16-17L es suficiente para iniciar y mantener el proceso sin sobrecargar. No pongas más: demasiado amoniaco puede inhibir las bacterias nitrificantes. Si a los 10 días no ves subida de nitritos, agrega 1 pellet adicional al día.</p>
+      <p style="margin-top:8px;"><strong>Importante:</strong> deja caer la comida en el mismo lugar cada vez, lejos del filtro, para que se descomponga gradualmente. No remuevas el agua innecesariamente los primeros días.</p>
+    </div>
+  </div>
+
+  <div class="info-section">
+    <h2>⚠️ Señales de Alerta</h2>
+    <div class="info-grid">
+      <div class="info-card card-red">
+        <h3>❌ Nitritos no suben en 12 días</h3>
+        <p>Posibles causas: agua muy fría (menos de 25°C hace lento el proceso), pH muy bajo o alto, o cloro residual. Verifica temperatura del calentador y que Clorkill haya neutralizado los cloraminatos.</p>
+      </div>
+      <div class="info-card card-red">
+        <h3>❌ Nitritos suben y nunca bajan</h3>
+        <p>Si los nitritos llevan más de 10 días en pico sin bajar, haz un cambio de agua del 20% para aliviar el estrés bacteriano. No hagas cambio de agua grandes o atrasos el proceso.</p>
+      </div>
+      <div class="info-card card-orange">
+        <h3>⚠️ Olor muy fuerte</h3>
+        <p>Un olor suave a tierra mojada es normal. Olor a huevo podrido (H₂S) indica zona sin oxígeno en el sustrato. Agita suavemente con palillo de madera y aumenta el flujo del filtro.</p>
+      </div>
+      <div class="info-card card-green">
+        <h3>✅ Señales de ciclado completo</h3>
+        <p>1) Nitritos = 0 en dos tiras consecutivas con días de diferencia. 2) Nitratos presentes y estables. 3) pH estable. 4) Agua clara. ¡Ya puedes introducir al betta con aclimatación gradual!</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="info-section">
+    <h2>💧 Guía rápida: Cambio de agua</h2>
+    <div class="info-card card-blue">
+      <h3>Procedimiento 25% cambio semanal</h3>
+      <p>1. Prepara agua con Clorkill 24h antes (o en el momento con la dosis correcta). Asegúrate de que esté a la misma temperatura de la pecera (±1°C). 2. Con una manguera o jeringa retira ~4L del fondo (donde se acumula materia orgánica). 3. Agrega el agua nueva lentamente. 4. Nunca laves el bio-media del filtro con agua de llave: si necesitas limpiar, hazlo con agua extraída de la propia pecera.</p>
+    </div>
+  </div>
+
+</div><!-- end info panel -->
+
+<!-- ========== TAB: COMMENTS ========== -->
+<div class="tab-panel" id="panel-comments">
+
+  <div class="comment-box">
+    <h2>📝 Registrar observación</h2>
+    <div class="comment-input-row">
+      <div class="comment-fields">
+        <div style="display:flex; gap:10px; flex-wrap:wrap;">
+          <div style="flex:1; min-width:140px;">
+            <label style="font-size:11px; color:var(--text-muted); font-family:'DM Mono',monospace; letter-spacing:0.5px; display:block; margin-bottom:5px;">DÍA DEL CICLADO</label>
+            <select id="commentDay">
+              <option value="">Selecciona el día...</option>
+            </select>
+          </div>
+          <div style="flex:1; min-width:140px;">
+            <label style="font-size:11px; color:var(--text-muted); font-family:'DM Mono',monospace; letter-spacing:0.5px; display:block; margin-bottom:5px;">TIPO DE NOTA</label>
+            <select id="commentType">
+              <option value="normal">📝 Observación general</option>
+              <option value="test">🧪 Resultado de tira</option>
+              <option value="cambio">💧 Cambio de agua</option>
+              <option value="alerta">⚠️ Alerta / problema</option>
+              <option value="bien">✅ Todo bien</option>
+            </select>
+          </div>
+        </div>
+        <div>
+          <label style="font-size:11px; color:var(--text-muted); font-family:'DM Mono',monospace; letter-spacing:0.5px; display:block; margin-bottom:5px;">COMENTARIO</label>
+          <textarea id="commentText" placeholder="Ej: Nitritos empezaron a subir, agua ligeramente turbia. pH estable en 7.2. Se ve burbujeo normal en el filtro..."></textarea>
+        </div>
+      </div>
+      <button class="btn-primary" onclick="addComment()">+ Agregar</button>
+    </div>
+  </div>
+
+  <!-- Test strips quick log -->
+  <div class="comment-box" style="margin-bottom:20px;">
+    <h2>🧪 Registro rápido de tira</h2>
+    <p style="font-size:12px; color:var(--text-muted); margin-bottom:14px;">Registra los valores de tu tira de forma estructurada. Deja en blanco lo que no puedas leer.</p>
+    <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(120px, 1fr)); gap:10px; margin-bottom:14px;">
+      <div>
+        <label style="font-size:10px; color:var(--nitrite); font-family:'DM Mono',monospace; display:block; margin-bottom:4px;">NO₂ NITRITOS</label>
+        <select id="stripNo2">
+          <option value="">--</option>
+          <option>0</option><option>0.5</option><option>1</option><option>2</option><option>5</option><option>10+</option>
+        </select>
+      </div>
+      <div>
+        <label style="font-size:10px; color:var(--nitrate); font-family:'DM Mono',monospace; display:block; margin-bottom:4px;">NO₃ NITRATOS</label>
+        <select id="stripNo3">
+          <option value="">--</option>
+          <option>0</option><option>10</option><option>20</option><option>40</option><option>80</option><option>160+</option>
+        </select>
+      </div>
+      <div>
+        <label style="font-size:10px; color:var(--accent); font-family:'DM Mono',monospace; display:block; margin-bottom:4px;">pH</label>
+        <select id="stripPh">
+          <option value="">--</option>
+          <option>6.0</option><option>6.5</option><option>6.8</option><option>7.0</option><option>7.2</option><option>7.5</option><option>8.0</option><option>8.5+</option>
+        </select>
+      </div>
+      <div>
+        <label style="font-size:10px; color:var(--warn); font-family:'DM Mono',monospace; display:block; margin-bottom:4px;">KH</label>
+        <select id="stripKh">
+          <option value="">--</option>
+          <option>0</option><option>40</option><option>80</option><option>120</option><option>180</option><option>240+</option>
+        </select>
+      </div>
+      <div>
+        <label style="font-size:10px; color:var(--food); font-family:'DM Mono',monospace; display:block; margin-bottom:4px;">GH</label>
+        <select id="stripGh">
+          <option value="">--</option>
+          <option>0</option><option>25</option><option>75</option><option>150</option><option>300+</option>
+        </select>
+      </div>
+      <div>
+        <label style="font-size:10px; color:var(--text-muted); font-family:'DM Mono',monospace; display:block; margin-bottom:4px;">DÍA</label>
+        <select id="stripDay">
+          <option value="">--</option>
+        </select>
+      </div>
+    </div>
+    <button class="btn-primary" onclick="logStripResult()">📊 Registrar tira</button>
+  </div>
+
+  <div id="commentsListContainer">
+    <div class="empty-comments" id="emptyComments">
+      <div class="big-icon">💬</div>
+      <p>Aún no tienes observaciones registradas.<br>Conforme avances en el ciclado, apunta tus notas aquí.</p>
+    </div>
+    <div class="comments-list" id="commentsList"></div>
+  </div>
+
+</div><!-- end comments panel -->
+
+<!-- ========== TAB: DIARIO ========== -->
+<div class="tab-panel" id="panel-diary">
+
+  <div class="progress-header" style="margin-bottom:20px;">
+    <div class="progress-title">
+      Diario del Ciclado
+      <span>Resumen por día: tareas, tiras y notas registradas</span>
+    </div>
+  </div>
+
+  <!-- Filter bar -->
+  <div class="diary-filter-bar">
+    <span style="font-family:'DM Mono',monospace; font-size:10px; color:var(--text-dim); letter-spacing:1px; margin-right:4px;">VER:</span>
+    <button class="diary-filter-btn active" id="dfilter-all" onclick="setDiaryFilter('all')">Todo</button>
+    <button class="diary-filter-btn" id="dfilter-activity" onclick="setDiaryFilter('activity')">Con actividad</button>
+    <button class="diary-filter-btn" id="dfilter-strips" onclick="setDiaryFilter('strips')">Con tiras</button>
+    <button class="diary-filter-btn" id="dfilter-notes" onclick="setDiaryFilter('notes')">Con notas</button>
+  </div>
+
+  <div id="diaryContainer">
+    <div class="diary-empty-day" style="padding: 60px 20px;">
+      <div style="font-size:36px; margin-bottom:12px;">📓</div>
+      <div>Cargando diario...</div>
+    </div>
+  </div>
+
+</div><!-- end diary panel -->
+
+
+</main>
+
+<script>
+// ============================================================
+// DATA: All weeks and days
+// ============================================================
+const PLAN = [
+  {
+    week: 0,
+    title: "Día 0 · Armado de la Pecera",
+    subtitle: "Configuración inicial",
+    color: "#38bdf8",
+    badge: "SETUP",
+    days: [
+      {
+        day: 0,
+        label: "Día 0",
+        name: "Armado completo de la pecera",
+        tasks: [
+          { id: "d0t1", icon: "🪨", text: "Colocar sustrato de arena de sílice (ya lavada)", tag: "setup", tagLabel: "SETUP" },
+          { id: "d0t2", icon: "🌡️", text: "Instalar calentador y ajustar a 28°C", tag: "setup", tagLabel: "SETUP" },
+          { id: "d0t3", icon: "🔄", text: "Instalar filtro Cascade HOB con bio-media y esponjas pre-filtro", tag: "setup", tagLabel: "SETUP" },
+          { id: "d0t4", icon: "🌿", text: "Colocar pothos con raíces sumergidas y hornwort (cola de zorro)", tag: "setup", tagLabel: "SETUP" },
+          { id: "d0t5", icon: "💧", text: "Llenar con agua de llave tratada con Clorkill (dosis correcta para cloraminas)", tag: "water", tagLabel: "AGUA" },
+          { id: "d0t6", icon: "⚡", text: "Encender filtro y calentador. Verificar que no haya fugas", tag: "setup", tagLabel: "SETUP" },
+          { id: "d0t7", icon: "🌡️", text: "Verificar temperatura con termómetro: 26-28°C", tag: "watch", tagLabel: "CHECAR" },
+          { id: "d0t8", icon: "🍖", text: "Agregar 3 pellets de Lomas Betta Premium Food — PRIMER DOSIS DE AMONIACO", tag: "food", tagLabel: "COMIDA/NH₃" }
+        ],
+        note: { type: "info", label: "¿POR QUÉ HOY?", text: "La comida inicia la producción de amoniaco orgánico. Las bacterias nitrificantes necesitan amoniaco como alimento para multiplicarse. El calentador es crucial: las bacterias trabajan mejor entre 26-30°C. Bajo 24°C el ciclado se puede volver muy lento." }
+      }
+    ]
+  },
+  {
+    week: 1,
+    title: "Semana 1 · Inicio del Proceso",
+    subtitle: "Días 1–7 · Las bacterias comienzan a colonizar",
+    color: "#f97316",
+    badge: "INICIO",
+    days: [
+      {
+        day: 1,
+        label: "Día 1",
+        name: "Rutina diaria establecida",
+        tasks: [
+          { id: "d1t1", icon: "🍖", text: "3 pellets de Lomas Betta Premium Food (mañana o tarde — elige un horario fijo)", tag: "food", tagLabel: "COMIDA/NH₃" },
+          { id: "d1t2", icon: "👀", text: "Observar: ¿hay algo flotando raro? ¿se ve el agua clara?", tag: "watch", tagLabel: "OBSERVAR" },
+          { id: "d1t3", icon: "🌡️", text: "Verificar temperatura 26-28°C", tag: "watch", tagLabel: "CHECAR" }
+        ],
+        note: { type: "info", label: "NOTA", text: "No pruebes el agua todavía. Aún no hay bacterias suficientes para leer nitritos. Solo mantén la rutina de comida." }
+      },
+      {
+        day: 2,
+        label: "Día 2",
+        name: "Mantenimiento básico",
+        tasks: [
+          { id: "d2t1", icon: "🍖", text: "3 pellets Lomas Betta Premium Food", tag: "food", tagLabel: "COMIDA/NH₃" },
+          { id: "d2t2", icon: "👀", text: "Observar estado del agua y filtro", tag: "watch", tagLabel: "OBSERVAR" }
+        ]
+      },
+      {
+        day: 3,
+        label: "Día 3",
+        name: "Comida + primera observación",
+        tasks: [
+          { id: "d3t1", icon: "🍖", text: "3 pellets Lomas Betta Premium Food", tag: "food", tagLabel: "COMIDA/NH₃" },
+          { id: "d3t2", icon: "👀", text: "Observar turbidez: puede estar empezando a ponerse ligeramente lechosa (normal)", tag: "watch", tagLabel: "OBSERVAR" }
+        ],
+        note: { type: "warn", label: "TURBIDEZ NORMAL", text: "Si el agua se ve blanca o lechosa en los primeros días, es normal. Es una explosión bacteriana heterótrofa, no la que queremos pero es parte del proceso. Aclarará sola." }
+      },
+      {
+        day: 4,
+        label: "Día 4",
+        name: "Continuar rutina",
+        tasks: [
+          { id: "d4t1", icon: "🍖", text: "3 pellets Lomas Betta Premium Food", tag: "food", tagLabel: "COMIDA/NH₃" },
+          { id: "d4t2", icon: "👀", text: "Observar filtro: verificar flujo normal y que esponjas pre-filtro no estén tapadas", tag: "watch", tagLabel: "OBSERVAR" }
+        ]
+      },
+      {
+        day: 5,
+        label: "Día 5",
+        name: "Comida + check temperatura",
+        tasks: [
+          { id: "d5t1", icon: "🍖", text: "3 pellets Lomas Betta Premium Food", tag: "food", tagLabel: "COMIDA/NH₃" },
+          { id: "d5t2", icon: "🌡️", text: "Verificar temperatura: debe estar entre 26-28°C consistentemente", tag: "watch", tagLabel: "CHECAR" }
+        ]
+      },
+      {
+        day: 6,
+        label: "Día 6",
+        name: "Comida",
+        tasks: [
+          { id: "d6t1", icon: "🍖", text: "3 pellets Lomas Betta Premium Food", tag: "food", tagLabel: "COMIDA/NH₃" },
+          { id: "d6t2", icon: "👀", text: "Observar estado general de la pecera", tag: "watch", tagLabel: "OBSERVAR" }
+        ]
+      },
+      {
+        day: 7,
+        label: "Día 7",
+        name: "🧪 Primera prueba con tira",
+        tasks: [
+          { id: "d7t1", icon: "🍖", text: "3 pellets Lomas Betta Premium Food", tag: "food", tagLabel: "COMIDA/NH₃" },
+          { id: "d7t2", icon: "🧪", text: "Usar PRIMERA TIRA 7-en-1: medir NO₂ (nitritos) y NO₃ (nitratos). Anotar resultados.", tag: "test", tagLabel: "TIRA" },
+          { id: "d7t3", icon: "📝", text: "Registrar resultados en la pestaña 'Mi Progreso'", tag: "watch", tagLabel: "REGISTRAR" }
+        ],
+        note: { type: "info", label: "¿QUÉ ESPERAR?", text: "Día 7: Lo más probable es que NO₂ esté en 0 o apenas en 0.5. Eso es normal y esperado. Los nitritos apenas van a empezar a subir. Si NO₂ ya marca algo, ¡excelente! El proceso está avanzando." }
+      }
+    ]
+  },
+  {
+    week: 2,
+    title: "Semana 2 · Subida de Nitritos",
+    subtitle: "Días 8–14 · El momento crítico — nitritos deben empezar a subir",
+    color: "#ef4444",
+    badge: "NITRITOS↑",
+    days: [
+      {
+        day: 8,
+        label: "Día 8",
+        name: "Continuar proceso",
+        tasks: [
+          { id: "d8t1", icon: "🍖", text: "3 pellets Lomas Betta Premium Food", tag: "food", tagLabel: "COMIDA/NH₃" },
+          { id: "d8t2", icon: "👀", text: "Observar el agua: ¿más clara que la semana pasada?", tag: "watch", tagLabel: "OBSERVAR" }
+        ]
+      },
+      {
+        day: 9,
+        label: "Día 9",
+        name: "Comida + observación",
+        tasks: [
+          { id: "d9t1", icon: "🍖", text: "3 pellets Lomas Betta Premium Food", tag: "food", tagLabel: "COMIDA/NH₃" },
+          { id: "d9t2", icon: "👀", text: "Observar flujo del filtro. Verificar que las raíces de pothos estén bien sumergidas.", tag: "watch", tagLabel: "OBSERVAR" }
+        ]
+      },
+      {
+        day: 10,
+        label: "Día 10",
+        name: "🧪 Segunda prueba + evaluación",
+        tasks: [
+          { id: "d10t1", icon: "🍖", text: "3 pellets Lomas Betta Premium Food", tag: "food", tagLabel: "COMIDA/NH₃" },
+          { id: "d10t2", icon: "🧪", text: "Usar tira 7-en-1: medir NO₂ y NO₃. Comparar con día 7.", tag: "test", tagLabel: "TIRA" },
+          { id: "d10t3", icon: "📝", text: "Registrar en 'Mi Progreso'. ¿Subieron nitritos desde día 7?", tag: "watch", tagLabel: "REGISTRAR" }
+        ],
+        note: { type: "warn", label: "⚠️ SI NO HAY CAMBIO", text: "Si los nitritos siguen en 0 en el día 10: agrega 1 pellet extra (4 total diarios) por 3 días. Verifica que la temperatura sea 26°C+. Si el pH bajó a menos de 6.5, haz un cambio del 30% con agua nueva." }
+      },
+      {
+        day: 11,
+        label: "Día 11",
+        name: "Comida rutinaria",
+        tasks: [
+          { id: "d11t1", icon: "🍖", text: "3 pellets Lomas Betta Premium Food (o 4 si el día 10 mostró 0 nitritos)", tag: "food", tagLabel: "COMIDA/NH₃" },
+          { id: "d11t2", icon: "🌡️", text: "Verificar temperatura", tag: "watch", tagLabel: "CHECAR" }
+        ]
+      },
+      {
+        day: 12,
+        label: "Día 12",
+        name: "Comida + observación",
+        tasks: [
+          { id: "d12t1", icon: "🍖", text: "3 pellets Lomas Betta Premium Food", tag: "food", tagLabel: "COMIDA/NH₃" },
+          { id: "d12t2", icon: "👀", text: "Observar el agua: ¿más clara? ¿alguna planta con señales de exceso de nitratos (puntas quemadas)?", tag: "watch", tagLabel: "OBSERVAR" }
+        ]
+      },
+      {
+        day: 13,
+        label: "Día 13",
+        name: "Comida",
+        tasks: [
+          { id: "d13t1", icon: "🍖", text: "3 pellets Lomas Betta Premium Food", tag: "food", tagLabel: "COMIDA/NH₃" }
+        ]
+      },
+      {
+        day: 14,
+        label: "Día 14",
+        name: "🧪 Tira + 💧 Cambio de agua (si nitratos > 40)",
+        tasks: [
+          { id: "d14t1", icon: "🍖", text: "3 pellets Lomas Betta Premium Food", tag: "food", tagLabel: "COMIDA/NH₃" },
+          { id: "d14t2", icon: "🧪", text: "Usar tira 7-en-1: medir NO₂ y NO₃ + pH + KH", tag: "test", tagLabel: "TIRA" },
+          { id: "d14t3", icon: "💧", text: "Si NO₃ > 40 ppm: cambio de agua 25% (≈4L). Si NO₃ < 40: NO hacer cambio.", tag: "water", tagLabel: "AGUA CONDICIONAL" },
+          { id: "d14t4", icon: "📝", text: "Registrar resultados en 'Mi Progreso'", tag: "watch", tagLabel: "REGISTRAR" }
+        ],
+        note: { type: "info", label: "ESTADO ESPERADO DÍA 14", text: "Los nitritos deben estar subiendo (0.5 - 2 ppm). Los nitratos deben estar empezando a aparecer (10-20 ppm). Esta es la señal de que el ciclo está activo y bien encaminado." }
+      }
+    ]
+  },
+  {
+    week: 3,
+    title: "Semana 3 · Pico de Nitritos",
+    subtitle: "Días 15–21 · Nitritos en máximo y comenzando a bajar",
+    color: "#fbbf24",
+    badge: "PICO",
+    days: [
+      {
+        day: 15,
+        label: "Día 15",
+        name: "Comida",
+        tasks: [
+          { id: "d15t1", icon: "🍖", text: "3 pellets Lomas Betta Premium Food", tag: "food", tagLabel: "COMIDA/NH₃" },
+          { id: "d15t2", icon: "👀", text: "Observar color del agua — puede estar ligeramente amarillenta (nitratos altos, normal)", tag: "watch", tagLabel: "OBSERVAR" }
+        ]
+      },
+      {
+        day: 16,
+        label: "Día 16",
+        name: "Comida + temperatura",
+        tasks: [
+          { id: "d16t1", icon: "🍖", text: "3 pellets Lomas Betta Premium Food", tag: "food", tagLabel: "COMIDA/NH₃" },
+          { id: "d16t2", icon: "🌡️", text: "Verificar temperatura 26-28°C. Las bacterias Nitrobacter son sensibles al frío.", tag: "watch", tagLabel: "CHECAR" }
+        ]
+      },
+      {
+        day: 17,
+        label: "Día 17",
+        name: "🧪 Tira de evaluación",
+        tasks: [
+          { id: "d17t1", icon: "🍖", text: "3 pellets Lomas Betta Premium Food", tag: "food", tagLabel: "COMIDA/NH₃" },
+          { id: "d17t2", icon: "🧪", text: "Usar tira 7-en-1: NO₂, NO₃, pH, KH. Registrar.", tag: "test", tagLabel: "TIRA" },
+          { id: "d17t3", icon: "📝", text: "Comparar con día 14: ¿nitritos siguen subiendo o empezaron a bajar?", tag: "watch", tagLabel: "REGISTRAR" }
+        ],
+        note: { type: "warn", label: "EVALUACIÓN SEMANA 3", text: "Si los nitritos siguen subiendo (2-5 ppm o más): el ciclo está en pleno pico, todo bien. Si ya empezaron a bajar con nitratos subiendo: ¡señal excelente! La fase final del ciclo está iniciando." }
+      },
+      {
+        day: 18,
+        label: "Día 18",
+        name: "Comida",
+        tasks: [
+          { id: "d18t1", icon: "🍖", text: "3 pellets Lomas Betta Premium Food", tag: "food", tagLabel: "COMIDA/NH₃" }
+        ]
+      },
+      {
+        day: 19,
+        label: "Día 19",
+        name: "Comida + observación",
+        tasks: [
+          { id: "d19t1", icon: "🍖", text: "3 pellets Lomas Betta Premium Food", tag: "food", tagLabel: "COMIDA/NH₃" },
+          { id: "d19t2", icon: "👀", text: "Observar plantas: las plantas aceleran un poco el proceso al competir por nitratos.", tag: "watch", tagLabel: "OBSERVAR" }
+        ]
+      },
+      {
+        day: 20,
+        label: "Día 20",
+        name: "Comida",
+        tasks: [
+          { id: "d20t1", icon: "🍖", text: "3 pellets Lomas Betta Premium Food", tag: "food", tagLabel: "COMIDA/NH₃" }
+        ]
+      },
+      {
+        day: 21,
+        label: "Día 21",
+        name: "🧪 Tira semanal + 💧 Cambio si es necesario",
+        tasks: [
+          { id: "d21t1", icon: "🍖", text: "3 pellets Lomas Betta Premium Food", tag: "food", tagLabel: "COMIDA/NH₃" },
+          { id: "d21t2", icon: "🧪", text: "Usar tira 7-en-1 completa: NO₂, NO₃, pH, KH, GH", tag: "test", tagLabel: "TIRA" },
+          { id: "d21t3", icon: "💧", text: "Si NO₃ > 40 ppm o nitritos en pico > 5 por más de 1 semana: cambio de agua 20-25%", tag: "water", tagLabel: "AGUA CONDICIONAL" },
+          { id: "d21t4", icon: "📝", text: "Registrar todo en 'Mi Progreso'. Evaluar si el ciclo está cerca de terminar.", tag: "watch", tagLabel: "REGISTRAR" }
+        ],
+        note: { type: "info", label: "SEMANA 3 — RESUMEN", text: "Si los nitritos bajaron de 2+ a menos de 1 entre el día 17 y 21, estás en la recta final. Si aún están altos, no te preocupes, las semanas 3-4 son las más variables. Continúa la rutina." }
+      }
+    ]
+  },
+  {
+    week: 4,
+    title: "Semana 4 · Recta Final",
+    subtitle: "Días 22–28 · Nitritos bajando a 0 — verificación del ciclado",
+    color: "#22c55e",
+    badge: "FINAL",
+    days: [
+      {
+        day: 22,
+        label: "Día 22",
+        name: "Comida + observación",
+        tasks: [
+          { id: "d22t1", icon: "🍖", text: "3 pellets Lomas Betta Premium Food", tag: "food", tagLabel: "COMIDA/NH₃" },
+          { id: "d22t2", icon: "👀", text: "Observar agua: en esta etapa debe estar relativamente clara", tag: "watch", tagLabel: "OBSERVAR" }
+        ]
+      },
+      {
+        day: 23,
+        label: "Día 23",
+        name: "Comida",
+        tasks: [
+          { id: "d23t1", icon: "🍖", text: "3 pellets Lomas Betta Premium Food", tag: "food", tagLabel: "COMIDA/NH₃" }
+        ]
+      },
+      {
+        day: 24,
+        label: "Día 24",
+        name: "🧪 Tira de evaluación final",
+        tasks: [
+          { id: "d24t1", icon: "🍖", text: "3 pellets Lomas Betta Premium Food", tag: "food", tagLabel: "COMIDA/NH₃" },
+          { id: "d24t2", icon: "🧪", text: "Tira 7-en-1: NO₂ debe estar bajando de forma visible (menos de 0.5 idealmente)", tag: "test", tagLabel: "TIRA CRÍTICA" },
+          { id: "d24t3", icon: "📝", text: "Registrar. Si NO₂ ya bajó a 0: ¡posible ciclado completo! Verificar en 2-3 días más.", tag: "watch", tagLabel: "REGISTRAR" }
+        ],
+        note: { type: "good", label: "🎯 META CERCANA", text: "Si en el día 24 los nitritos ya bajaron a 0 o cerca de 0 y los nitratos están presentes: ¡casi listo! Haz una prueba confirmatoria en 2-3 días. Si aún están en 1-2: continúa, puede tardar unos días más." }
+      },
+      {
+        day: 25,
+        label: "Día 25",
+        name: "Comida + temperatura",
+        tasks: [
+          { id: "d25t1", icon: "🍖", text: "3 pellets Lomas Betta Premium Food", tag: "food", tagLabel: "COMIDA/NH₃" },
+          { id: "d25t2", icon: "🌡️", text: "Verificar temperatura final antes del betta", tag: "watch", tagLabel: "CHECAR" }
+        ]
+      },
+      {
+        day: 26,
+        label: "Día 26",
+        name: "Comida",
+        tasks: [
+          { id: "d26t1", icon: "🍖", text: "3 pellets Lomas Betta Premium Food", tag: "food", tagLabel: "COMIDA/NH₃" }
+        ]
+      },
+      {
+        day: 27,
+        label: "Día 27",
+        name: "Comida",
+        tasks: [
+          { id: "d27t1", icon: "🍖", text: "3 pellets Lomas Betta Premium Food", tag: "food", tagLabel: "COMIDA/NH₃" }
+        ]
+      },
+      {
+        day: 28,
+        label: "Día 28",
+        name: "🧪 TIRA DE CONFIRMACIÓN FINAL + 💧 Cambio pre-betta",
+        tasks: [
+          { id: "d28t1", icon: "🧪", text: "Tira 7-en-1 CONFIRMATORIA: NO₂ debe ser 0. NO₃ debe estar presente (5-40 ppm). pH 6.8-7.5.", tag: "test", tagLabel: "TIRA FINAL" },
+          { id: "d28t2", icon: "💧", text: "Cambio de agua 25% para bajar nitratos. Usar Clorkill. Agua misma temperatura.", tag: "water", tagLabel: "CAMBIO PRE-BETTA" },
+          { id: "d28t3", icon: "⏳", text: "Esperar 24-48 horas tras el cambio antes de introducir al betta", tag: "watch", tagLabel: "ESPERAR" },
+          { id: "d28t4", icon: "📝", text: "Registrar resultados finales. ¡El betta está casi listo para entrar!", tag: "watch", tagLabel: "REGISTRAR" }
+        ],
+        note: { type: "good", label: "✅ CRITERIOS DE CICLADO COMPLETO", text: "1) NO₂ = 0 en dos tiras consecutivas separadas por 24-48h. 2) NO₃ > 0 (entre 5-40 ppm). 3) pH estable 6.8-7.5. 4) Agua clara y sin olor fuerte. Si se cumplen todos: ¡el betta puede entrar con aclimatación gradual de 30-45 minutos!" }
+      }
+    ]
+  },
+  {
+    week: 5,
+    title: "Semana 5+ · Si el Ciclado Tarda Más",
+    subtitle: "Días 29–35 · Extensión si es necesaria (normal en 25-35% de los ciclos)",
+    color: "#818cf8",
+    badge: "EXTENSIÓN",
+    days: [
+      {
+        day: 29,
+        label: "Día 29+",
+        name: "Si nitritos aún no llegaron a 0",
+        tasks: [
+          { id: "d29t1", icon: "🍖", text: "3 pellets Lomas Betta Premium Food — continuar rutina sin cambios", tag: "food", tagLabel: "COMIDA/NH₃" },
+          { id: "d29t2", icon: "🧪", text: "Tira 7-en-1 cada 3 días para monitorear bajada de nitritos", tag: "test", tagLabel: "TIRA" },
+          { id: "d29t3", icon: "💧", text: "Cambio de agua 20% solo si NO₃ > 80 ppm", tag: "water", tagLabel: "AGUA CONDICIONAL" }
+        ],
+        note: { type: "warn", label: "NORMAL TARDAR MÁS", text: "Si a los 28 días los nitritos aún no bajaron a 0, es normal. El ciclado en México con agua de llave puede tardar entre 4-6 semanas dependiendo de temperatura, pH y bacterias locales. Paciencia. El ciclo SIEMPRE completa si los parámetros son correctos." }
+      },
+      {
+        day: 32,
+        label: "Día 32",
+        name: "🧪 Tira de monitoreo",
+        tasks: [
+          { id: "d32t1", icon: "🍖", text: "3 pellets Lomas Betta Premium Food", tag: "food", tagLabel: "COMIDA/NH₃" },
+          { id: "d32t2", icon: "🧪", text: "Tira 7-en-1: seguir monitoreando NO₂. Cuando llegue a 0: esperar 2 días y confirmar.", tag: "test", tagLabel: "TIRA" }
+        ]
+      },
+      {
+        day: 35,
+        label: "Día 35",
+        name: "🏆 Verificación final (si hubo extensión)",
+        tasks: [
+          { id: "d35t1", icon: "🧪", text: "Tira 7-en-1 CONFIRMATORIA: NO₂ = 0, NO₃ presente. Verificar pH y KH.", tag: "test", tagLabel: "TIRA FINAL" },
+          { id: "d35t2", icon: "💧", text: "Cambio de agua 25% pre-betta con Clorkill. Esperar 24h.", tag: "water", tagLabel: "CAMBIO FINAL" },
+          { id: "d35t3", icon: "🐟", text: "¡Listo para ir por el betta a la tienda especialista! Llevar bolsa con agua de la pecera.", tag: "done", tagLabel: "BETTA" }
+        ],
+        note: { type: "good", label: "🎉 ¡ENHORABUENA!", text: "Cuando el ciclo esté completo, introduce al betta con aclimatación: flota la bolsa 15 min, agrega agua de la pecera poco a poco cada 5 min durante 30 min, luego suéltalo con una red sin vaciar la bolsa en la pecera." }
+      }
+    ]
+  }
+];
+
+// ============================================================
+// USER / LOGIN SYSTEM
+// ============================================================
+let currentUser = null;
+
+function getUserKey(user, suffix) {
+  return 'betaCycle_' + encodeURIComponent(user.toLowerCase().trim()) + '_' + suffix;
+}
+
+function getAllUsers() {
+  return JSON.parse(localStorage.getItem('betaCycleUsers') || '[]');
+}
+
+function saveUserToList(name) {
+  const users = getAllUsers();
+  if (!users.includes(name)) {
+    users.unshift(name);
+    if (users.length > 8) users.pop();
+    localStorage.setItem('betaCycleUsers', JSON.stringify(users));
+  }
+}
+
+function doLogin() {
+  const input = document.getElementById('loginInput');
+  const name = input.value.trim();
+  if (!name) { input.style.borderColor = 'var(--nitrite)'; return; }
+  loginAs(name);
+}
+
+function loginAs(name) {
+  currentUser = name;
+  saveUserToList(name);
+
+  // Load user data
+  state = JSON.parse(localStorage.getItem(getUserKey(name, 'state')) || '{}');
+  comments = JSON.parse(localStorage.getItem(getUserKey(name, 'comments')) || '[]');
+  diaryEntries = JSON.parse(localStorage.getItem(getUserKey(name, 'diary')) || '{}');
+
+  // Update UI
+  document.getElementById('userNameDisplay').textContent = name;
+  document.getElementById('userAvatar').textContent = name.charAt(0).toUpperCase();
+  document.getElementById('loginScreen').style.display = 'none';
+
+  // Rebuild
+  renderPlan();
+  populateDaySelects();
+  renderComments();
+  renderDiary();
+}
+
+function doLogout() {
+  currentUser = null;
+  state = {};
+  comments = [];
+  diaryEntries = {};
+  document.getElementById('loginScreen').style.display = 'flex';
+  document.getElementById('loginInput').value = '';
+  loadSavedUsers();
+  openTab('plan');
+}
+
+function loadSavedUsers() {
+  const users = getAllUsers();
+  const sec = document.getElementById('savedUsersSection');
+  const list = document.getElementById('savedUsersList');
+  if (users.length === 0) { sec.style.display = 'none'; return; }
+  sec.style.display = 'block';
+  list.innerHTML = users.map(u => `
+    <div class="login-user-chip" onclick="document.getElementById('loginInput').value='${u.replace(/'/g,"\\'")}'; doLogin();">
+      <div style="width:20px;height:20px;border-radius:50%;background:linear-gradient(135deg,#38bdf8,#818cf8);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:white;font-family:'Syne',sans-serif;">${u.charAt(0).toUpperCase()}</div>
+      ${u}
+    </div>
+  `).join('');
+}
+
+// Enter key on login input
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('loginInput').addEventListener('keydown', e => {
+    if (e.key === 'Enter') doLogin();
+  });
+  loadSavedUsers();
+  buildBubbles();
+});
+
+// ============================================================
+// STATE (user-scoped)
+// ============================================================
+let state = {};
+let comments = [];
+let diaryEntries = {}; // { "Día N": { note: string, timestamp: string } }
+
+function saveState() {
+  if (!currentUser) return;
+  localStorage.setItem(getUserKey(currentUser, 'state'), JSON.stringify(state));
+  updateDiaryTasksForToday();
+}
+
+function saveComments() {
+  if (!currentUser) return;
+  localStorage.setItem(getUserKey(currentUser, 'comments'), JSON.stringify(comments));
+}
+
+function saveDiaryEntries() {
+  if (!currentUser) return;
+  localStorage.setItem(getUserKey(currentUser, 'diary'), JSON.stringify(diaryEntries));
+}
+
+// ============================================================
+// DIARY LOGIC
+// ============================================================
+let diaryFilter = 'all';
+
+function setDiaryFilter(f) {
+  diaryFilter = f;
+  document.querySelectorAll('.diary-filter-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('dfilter-' + f).classList.add('active');
+  renderDiary();
+}
+
+// Get all comments grouped by day label
+function getCommentsByDay() {
+  const map = {};
+  comments.forEach(c => {
+    const key = c.day || 'Sin día específico';
+    if (!map[key]) map[key] = [];
+    map[key].push(c);
+  });
+  return map;
+}
+
+// Parse strip data from comment text
+function parseStripFromComment(c) {
+  if (c.type !== 'test' || !c.text.includes('📊 Resultado de tira')) return null;
+  const vals = {};
+  const parts = c.text.replace('📊 Resultado de tira — ', '').split(' | ');
+  parts.forEach(p => {
+    if (p.includes('NO₂')) vals.no2 = p.split(': ')[1]?.replace(' ppm','') || '';
+    if (p.includes('NO₃')) vals.no3 = p.split(': ')[1]?.replace(' ppm','') || '';
+    if (p.includes('pH')) vals.ph = p.split(': ')[1] || '';
+    if (p.includes('KH')) vals.kh = p.split(': ')[1] || '';
+    if (p.includes('GH')) vals.gh = p.split(': ')[1] || '';
+  });
+  return vals;
+}
+
+function getNo2Color(val) {
+  if (!val || val === '0') return 'var(--done)';
+  if (val === '0.5' || val === '1') return 'var(--warn)';
+  return 'var(--nitrite)';
+}
+
+function updateDiaryTasksForToday() {
+  renderDiary();
+}
+
+function getDiaryNoteForDay(dayLabel) {
+  return diaryEntries[dayLabel] || null;
+}
+
+function saveDiaryNote(dayLabel, text) {
+  if (!diaryEntries[dayLabel]) diaryEntries[dayLabel] = {};
+  diaryEntries[dayLabel].note = text;
+  diaryEntries[dayLabel].timestamp = new Date().toLocaleDateString('es-MX', { day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' });
+  saveDiaryEntries();
+  renderDiary();
+}
+
+function renderDiary() {
+  const container = document.getElementById('diaryContainer');
+  if (!container) return;
+
+  const commentsByDay = getCommentsByDay();
+  const badge = document.getElementById('diary-count-badge');
+
+  // Collect all days from PLAN
+  const allDays = [];
+  PLAN.forEach(week => {
+    week.days.forEach(day => allDays.push({ ...day, weekColor: week.color }));
+  });
+
+  // Count active days
+  let activeDays = 0;
+
+  let html = '';
+
+  allDays.forEach(day => {
+    const dayLabel = `Día ${day.day}`;
+    const dayComments = commentsByDay[dayLabel] || [];
+    const strips = dayComments.filter(c => c.type === 'test' && c.text.includes('📊 Resultado de tira'));
+    const notes = dayComments.filter(c => !(c.type === 'test' && c.text.includes('📊 Resultado de tira')));
+    const diaryNote = getDiaryNoteForDay(dayLabel);
+
+    // Tasks done for this day
+    const doneTasks = day.tasks.filter(t => state[t.id]);
+    const hasTasks = doneTasks.length > 0;
+    const hasStrips = strips.length > 0;
+    const hasNotes = notes.length > 0;
+    const hasDiaryNote = diaryNote && diaryNote.note;
+    const hasAny = hasTasks || hasStrips || hasNotes || hasDiaryNote;
+
+    // Apply filter
+    if (diaryFilter === 'activity' && !hasAny) return;
+    if (diaryFilter === 'strips' && !hasStrips) return;
+    if (diaryFilter === 'notes' && !hasNotes && !hasDiaryNote) return;
+
+    if (hasAny) activeDays++;
+
+    // Summary pills
+    let pills = '';
+    if (doneTasks.length > 0) pills += `<span class="diary-pill diary-pill-task">✓ ${doneTasks.length}/${day.tasks.length} tareas</span>`;
+    if (hasStrips) pills += `<span class="diary-pill diary-pill-strip">🧪 ${strips.length} tira${strips.length > 1 ? 's' : ''}</span>`;
+    if (notes.length > 0) pills += `<span class="diary-pill diary-pill-note">💬 ${notes.length} nota${notes.length > 1 ? 's' : ''}</span>`;
+    if (hasDiaryNote) pills += `<span class="diary-pill" style="border-color:var(--food);color:var(--food);background:rgba(167,139,250,0.08);">📓 diario</span>`;
+
+    // Tasks section
+    let tasksHtml = '';
+    if (day.tasks.length > 0) {
+      tasksHtml = `<div>
+        <div class="diary-section-label">TAREAS DEL DÍA</div>
+        ${day.tasks.map(t => `
+          <div class="diary-task-row">
+            <div class="diary-task-check ${state[t.id] ? '' : 'pending'}">${state[t.id] ? '✓' : ''}</div>
+            <span style="font-size:14px;">${t.icon}</span>
+            <span style="${state[t.id] ? 'color:var(--text)' : 'color:var(--text-dim); text-decoration:line-through;'}">${t.text}</span>
+          </div>
+        `).join('')}
+      </div>`;
+    }
+
+    // Strips section
+    let stripsHtml = '';
+    if (strips.length > 0) {
+      stripsHtml = `<div>
+        <div class="diary-section-label">TIRAS REGISTRADAS</div>
+        ${strips.map(s => {
+          const parsed = parseStripFromComment(s);
+          if (!parsed) return '';
+          return `<div class="diary-strip-card">
+            ${parsed.no2 !== undefined ? `<div class="diary-strip-val"><div class="sv-label" style="color:var(--nitrite);">NO₂</div><div class="sv-val" style="color:${getNo2Color(parsed.no2)}">${parsed.no2 || '—'}</div><div style="font-size:9px;color:var(--text-dim);font-family:'DM Mono',monospace;">ppm</div></div>` : ''}
+            ${parsed.no3 !== undefined ? `<div class="diary-strip-val"><div class="sv-label" style="color:var(--nitrate);">NO₃</div><div class="sv-val" style="color:var(--nitrate)">${parsed.no3 || '—'}</div><div style="font-size:9px;color:var(--text-dim);font-family:'DM Mono',monospace;">ppm</div></div>` : ''}
+            ${parsed.ph !== undefined ? `<div class="diary-strip-val"><div class="sv-label" style="color:var(--accent);">pH</div><div class="sv-val" style="color:var(--accent)">${parsed.ph || '—'}</div></div>` : ''}
+            ${parsed.kh !== undefined ? `<div class="diary-strip-val"><div class="sv-label" style="color:var(--warn);">KH</div><div class="sv-val" style="color:var(--warn)">${parsed.kh || '—'}</div></div>` : ''}
+            ${parsed.gh !== undefined ? `<div class="diary-strip-val"><div class="sv-label" style="color:var(--food);">GH</div><div class="sv-val" style="color:var(--food)">${parsed.gh || '—'}</div></div>` : ''}
+            <div style="flex:1; display:flex; align-items:flex-end; justify-content:flex-end;">
+              <span style="font-family:'DM Mono',monospace; font-size:10px; color:var(--text-dim);">${s.date}</span>
+            </div>
+          </div>`;
+        }).join('')}
+      </div>`;
+    }
+
+    // Notes section
+    let notesHtml = '';
+    if (notes.length > 0) {
+      notesHtml = `<div>
+        <div class="diary-section-label">OBSERVACIONES</div>
+        ${notes.map(n => `
+          <div class="diary-note-entry type-${n.type}" style="margin-bottom:8px;">
+            <div class="diary-note-meta">${n.date} · ${n.type.toUpperCase()}</div>
+            ${n.text}
+          </div>
+        `).join('')}
+      </div>`;
+    }
+
+    // Diary personal note
+    const savedNote = diaryNote && diaryNote.note ? diaryNote.note : '';
+    const diaryNoteSection = `<div>
+      <div class="diary-section-label">NOTA PERSONAL DEL DÍA</div>
+      <div style="position:relative;">
+        <textarea id="dnote_${day.day}" placeholder="¿Qué pasó hoy? Escribe lo que quieras recordar..." style="min-height:72px; background:var(--surface3); border:1px solid var(--border); color:var(--text); border-radius:10px; padding:10px 14px; font-family:'DM Sans',sans-serif; font-size:13px; width:100%; outline:none; resize:vertical; transition:border-color 0.2s;">${savedNote}</textarea>
+        <button onclick="saveDiaryNote('${dayLabel}', document.getElementById('dnote_${day.day}').value)" style="margin-top:8px; background:linear-gradient(135deg,#38bdf8,#818cf8); border:none; color:white; font-family:'Syne',sans-serif; font-size:12px; font-weight:700; padding:7px 18px; border-radius:8px; cursor:pointer; transition:opacity 0.2s;">💾 Guardar nota</button>
+        ${hasDiaryNote ? `<span style="font-family:'DM Mono',monospace; font-size:10px; color:var(--text-dim); margin-left:10px;">Guardado: ${diaryNote.timestamp}</span>` : ''}
+      </div>
+    </div>`;
+
+    const isOpen = hasAny;
+
+    html += `
+      <div class="diary-day-block ${isOpen ? 'open' : ''}" id="diary_day_${day.day}">
+        <div class="diary-day-header" onclick="toggleDiaryDay(${day.day})">
+          <div class="diary-day-num">${day.label}<small>DÍA ${day.day}</small></div>
+          <div class="diary-day-name" style="color:${hasAny ? 'var(--text)' : 'var(--text-dim)'}">${day.name.replace(/🧪|💧|🏆/g,'').trim()}</div>
+          <div class="diary-summary-pills">${pills || (!hasAny ? '<span style="font-family:\'DM Mono\',monospace;font-size:9px;color:var(--text-dim);">sin actividad</span>' : '')}</div>
+          <span class="diary-chevron">▼</span>
+        </div>
+        <div class="diary-day-body">
+          ${tasksHtml}
+          ${stripsHtml}
+          ${notesHtml}
+          ${diaryNoteSection}
+          ${!hasAny && !tasksHtml ? '<div class="diary-empty-day">Aún sin actividad registrada para este día.</div>' : ''}
+        </div>
+      </div>
+    `;
+  });
+
+  if (!html) {
+    html = `<div class="diary-empty-day" style="padding:60px 20px;">
+      <div style="font-size:36px;margin-bottom:12px;">📓</div>
+      <div>No hay entradas con el filtro seleccionado.</div>
+    </div>`;
+  }
+
+  container.innerHTML = html;
+
+  // Update badge
+  if (badge) {
+    if (activeDays > 0) { badge.style.display = 'inline'; badge.textContent = activeDays; }
+    else badge.style.display = 'none';
+  }
+}
+
+function toggleDiaryDay(dayNum) {
+  const el = document.getElementById('diary_day_' + dayNum);
+  if (el) el.classList.toggle('open');
+}
+
+// ============================================================
+// BUILD BUBBLES
+// ============================================================
+function buildBubbles() {
+  const container = document.getElementById('bubblesContainer');
+  for (let i = 0; i < 18; i++) {
+    const b = document.createElement('div');
+    b.className = 'bubble';
+    b.style.left = Math.random() * 100 + '%';
+    b.style.width = b.style.height = (4 + Math.random() * 10) + 'px';
+    b.style.animationDuration = (8 + Math.random() * 18) + 's';
+    b.style.animationDelay = (Math.random() * 12) + 's';
+    b.style.opacity = 0.2 + Math.random() * 0.3;
+    container.appendChild(b);
+  }
+}
+
+// ============================================================
+// RENDER PLAN
+// ============================================================
+function getTagClass(tag) {
+  const map = { food: 'tag-food', test: 'tag-test', water: 'tag-water', watch: 'tag-watch', critical: 'tag-critical', done: 'tag-done', setup: 'tag-water' };
+  return map[tag] || 'tag-watch';
+}
+
+function renderPlan() {
+  const container = document.getElementById('weeksContainer');
+  container.innerHTML = '';
+
+  PLAN.forEach((week, wi) => {
+    // Count total tasks and done tasks in this week
+    let totalTasks = 0, doneTasks = 0;
+    week.days.forEach(d => {
+      d.tasks.forEach(t => {
+        totalTasks++;
+        if (state[t.id]) doneTasks++;
+      });
+    });
+
+    const weekDiv = document.createElement('div');
+    weekDiv.className = 'week-section' + (wi === 0 ? ' open' : '');
+    weekDiv.id = 'week_' + wi;
+
+    const weekPct = totalTasks > 0 ? Math.round(doneTasks / totalTasks * 100) : 0;
+    const allWeekDone = totalTasks > 0 && doneTasks === totalTasks;
+
+    weekDiv.innerHTML = `
+      <div class="week-header" onclick="toggleWeek(${wi})">
+        <div class="week-num">SEM ${wi}</div>
+        <div class="week-title" style="color:${week.color}">${week.title}</div>
+        <div class="week-badge" style="border-color:${week.color};color:${week.color};background:${week.color}18;">${allWeekDone ? '✅ DONE' : week.badge}</div>
+        <div class="week-progress-mini">
+          <div class="week-progress-bar"><div class="week-progress-fill" style="width:${weekPct}%;background:${week.color}"></div></div>
+          <span>${doneTasks}/${totalTasks}</span>
+        </div>
+        <div class="week-chevron">▼</div>
+      </div>
+      <div class="week-body" id="weekbody_${wi}">
+        <p style="font-size:12px; color:var(--text-muted); padding:14px 0 0; font-family:'DM Mono',monospace; letter-spacing:0.5px;">${week.subtitle}</p>
+        <div id="days_${wi}"></div>
+      </div>
+    `;
+
+    container.appendChild(weekDiv);
+
+    // Open first week by default
+    if (wi === 0) {
+      weekDiv.querySelector('.week-body').style.display = 'block';
+    }
+
+    // Render days
+    const daysContainer = weekDiv.querySelector(`#days_${wi}`);
+    week.days.forEach(day => {
+      const allDayDone = day.tasks.every(t => state[t.id]);
+      const dayDiv = document.createElement('div');
+      dayDiv.className = 'day-card' + (allDayDone ? ' all-done' : '');
+      dayDiv.id = 'day_' + day.day;
+
+      let tasksHtml = day.tasks.map(t => `
+        <div class="task-item${state[t.id] ? ' completed' : ''}" onclick="toggleTask('${t.id}', ${wi})" id="task_${t.id}">
+          <div class="task-check">${state[t.id] ? '✓' : ''}</div>
+          <div class="task-icon">${t.icon}</div>
+          <div class="task-content">
+            <div class="task-text">${t.text} <span class="task-tag ${getTagClass(t.tag)}">${t.tagLabel}</span></div>
+          </div>
+        </div>
+      `).join('');
+
+      let noteHtml = '';
+      if (day.note) {
+        noteHtml = `<div class="day-note note-${day.note.type}">
+          <span class="note-label">${day.note.label}</span>
+          ${day.note.text}
+        </div>`;
+      }
+
+      dayDiv.innerHTML = `
+        <div class="day-header">
+          <div class="day-num">${day.label}<small>DÍA ${day.day}</small></div>
+          <div class="day-name">${day.name}</div>
+          <div class="day-done-badge">✅ Completo</div>
+        </div>
+        <div class="task-list">${tasksHtml}</div>
+        ${noteHtml}
+      `;
+
+      daysContainer.appendChild(dayDiv);
+    });
+  });
+
+  updateProgress();
+}
+
+function toggleWeek(wi) {
+  const weekDiv = document.getElementById('week_' + wi);
+  const body = document.getElementById('weekbody_' + wi);
+  const isOpen = weekDiv.classList.contains('open');
+  weekDiv.classList.toggle('open', !isOpen);
+  body.style.display = isOpen ? 'none' : 'block';
+}
+
+function toggleTask(taskId, weekIdx) {
+  state[taskId] = !state[taskId];
+  saveState();
+
+  // Update task visuals
+  const taskEl = document.getElementById('task_' + taskId);
+  if (taskEl) {
+    taskEl.classList.toggle('completed', state[taskId]);
+    const check = taskEl.querySelector('.task-check');
+    check.textContent = state[taskId] ? '✓' : '';
+  }
+
+  // Check if whole day is done
+  PLAN.forEach(week => {
+    week.days.forEach(day => {
+      if (day.tasks.some(t => t.id === taskId)) {
+        const allDone = day.tasks.every(t => state[t.id]);
+        const dayEl = document.getElementById('day_' + day.day);
+        if (dayEl) dayEl.classList.toggle('all-done', allDone);
+      }
+    });
+  });
+
+  // Update week header
+  updateWeekHeader(weekIdx);
+  updateProgress();
+}
+
+function updateWeekHeader(wi) {
+  const week = PLAN[wi];
+  let totalTasks = 0, doneTasks = 0;
+  week.days.forEach(d => {
+    d.tasks.forEach(t => {
+      totalTasks++;
+      if (state[t.id]) doneTasks++;
+    });
+  });
+  const weekPct = totalTasks > 0 ? Math.round(doneTasks / totalTasks * 100) : 0;
+  const allWeekDone = totalTasks > 0 && doneTasks === totalTasks;
+  const weekDiv = document.getElementById('week_' + wi);
+  if (!weekDiv) return;
+  const badge = weekDiv.querySelector('.week-badge');
+  if (badge) badge.textContent = allWeekDone ? '✅ DONE' : week.badge;
+  const fill = weekDiv.querySelector('.week-progress-fill');
+  if (fill) fill.style.width = weekPct + '%';
+  const mini = weekDiv.querySelector('.week-progress-mini span');
+  if (mini) mini.textContent = doneTasks + '/' + totalTasks;
+}
+
+function updateProgress() {
+  let total = 0, done = 0, daysDone = 0;
+  PLAN.forEach(week => {
+    week.days.forEach(day => {
+      const allDone = day.tasks.every(t => state[t.id]);
+      if (allDone && day.tasks.length > 0) daysDone++;
+      day.tasks.forEach(t => {
+        total++;
+        if (state[t.id]) done++;
+      });
+    });
+  });
+
+  const pct = total > 0 ? Math.round(done / total * 100) : 0;
+  document.getElementById('stat-total').textContent = done;
+  document.getElementById('stat-days').textContent = daysDone;
+  document.getElementById('stat-pct').textContent = pct + '%';
+  document.getElementById('bigPct').textContent = pct + '%';
+  document.getElementById('mainProgressFill').style.width = pct + '%';
+
+  // Phase markers
+  const phases = ['pm0', 'pm1', 'pm2', 'pm3', 'pm4', 'pm5'];
+  const thresholds = [0, 20, 40, 60, 80, 100];
+  phases.forEach((id, i) => {
+    const el = document.getElementById(id);
+    if (el) el.classList.toggle('active-phase', pct >= thresholds[i] && pct < (thresholds[i+1] || 101));
+  });
+
+  // Remove pulsing once done
+  const ps = document.getElementById('progressSection');
+  if (pct >= 100) ps.classList.remove('pulsing');
+  else ps.classList.add('pulsing');
+}
+
+// ============================================================
+// TABS
+// ============================================================
+function openTab(tab) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('panel-' + tab).classList.add('active');
+  document.getElementById('tab-' + tab).classList.add('active');
+  if (tab === 'diary') renderDiary();
+}
+
+// ============================================================
+// COMMENTS
+// ============================================================
+function populateDaySelects() {
+  const opts = ['<option value="">Selecciona el día...</option>'];
+  PLAN.forEach(week => {
+    week.days.forEach(day => {
+      opts.push(`<option value="Día ${day.day}">Día ${day.day} — ${day.name.replace(/🧪|💧|🏆/g,'').trim()}</option>`);
+    });
+  });
+  const selects = [document.getElementById('commentDay'), document.getElementById('stripDay')];
+  selects.forEach(s => { if(s) s.innerHTML = opts.join(''); });
+}
+
+function addComment() {
+  const day = document.getElementById('commentDay').value;
+  const type = document.getElementById('commentType').value;
+  const text = document.getElementById('commentText').value.trim();
+  if (!text) { alert('Escribe algún comentario antes de guardar.'); return; }
+
+  const entry = {
+    id: Date.now(),
+    day: day || 'Sin día específico',
+    type,
+    text,
+    date: new Date().toLocaleDateString('es-MX', { day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' })
+  };
+
+  comments.unshift(entry);
+  saveComments();
+  document.getElementById('commentText').value = '';
+  renderComments();
+  renderDiary();
+}
+
+function logStripResult() {
+  const no2 = document.getElementById('stripNo2').value;
+  const no3 = document.getElementById('stripNo3').value;
+  const ph = document.getElementById('stripPh').value;
+  const kh = document.getElementById('stripKh').value;
+  const gh = document.getElementById('stripGh').value;
+  const day = document.getElementById('stripDay').value;
+
+  if (!no2 && !no3 && !ph) { alert('Selecciona al menos un valor de la tira.'); return; }
+
+  const parts = [];
+  if (no2) parts.push(`NO₂ Nitritos: ${no2} ppm`);
+  if (no3) parts.push(`NO₃ Nitratos: ${no3} ppm`);
+  if (ph) parts.push(`pH: ${ph}`);
+  if (kh) parts.push(`KH: ${kh}`);
+  if (gh) parts.push(`GH: ${gh}`);
+
+  const text = '📊 Resultado de tira — ' + parts.join(' | ');
+
+  // Auto-interpret
+  let interpretation = '';
+  if (no2 === '0' && no3 && no3 !== '0') interpretation = ' ✅ ¡Nitritos en 0 con nitratos presentes! Posible ciclado completo.';
+  else if (no2 === '5' || no2 === '10+') interpretation = ' ⚠️ Nitritos en pico alto. Normal en semanas 2-3. Continúa la rutina.';
+  else if (no2 === '0' && no3 === '0') interpretation = ' ℹ️ Ambos en 0. Ciclado aún en fase inicial.';
+
+  const entry = {
+    id: Date.now(),
+    day: day || 'Sin día específico',
+    type: 'test',
+    text: text + interpretation,
+    date: new Date().toLocaleDateString('es-MX', { day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' })
+  };
+
+  comments.unshift(entry);
+  saveComments();
+  renderComments();
+  renderDiary();
+}
+
+function deleteComment(id) {
+  comments = comments.filter(c => c.id !== id);
+  saveComments();
+  renderComments();
+  renderDiary();
+}
+
+function renderComments() {
+  const list = document.getElementById('commentsList');
+  const empty = document.getElementById('emptyComments');
+  const badge = document.getElementById('comment-count-badge');
+
+  if (comments.length === 0) {
+    empty.style.display = 'block';
+    list.innerHTML = '';
+    badge.style.display = 'none';
+    return;
+  }
+
+  empty.style.display = 'none';
+  badge.style.display = 'inline';
+  badge.textContent = comments.length;
+
+  const typeLabels = { normal: 'NOTA', test: 'TIRA', cambio: 'CAMBIO', alerta: 'ALERTA', bien: 'BIEN' };
+
+  list.innerHTML = comments.map(c => `
+    <div class="comment-entry type-${c.type}">
+      <div class="comment-meta">
+        <span class="comment-date">📅 ${c.date}</span>
+        <span class="comment-type-badge">${typeLabels[c.type] || c.type}</span>
+        <span class="comment-day-ref">${c.day}</span>
+      </div>
+      <div class="comment-text">${c.text}</div>
+      <div class="delete-btn-wrap">
+        <button class="btn-danger" onclick="deleteComment(${c.id})">✕</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+
+// ============================================================
+// INIT
+// ============================================================
+document.addEventListener('DOMContentLoaded', () => {
+  buildBubbles();
+  // Login screen handles the rest — nothing rendered until user logs in
+});
+</script>
+</body>
+</html>
